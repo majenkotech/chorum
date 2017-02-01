@@ -2,12 +2,12 @@
 
 session_start();
 
+require_once 'config.php';
 require_once 'parsedown/Parsedown.php';
 
 // Configure this line for your DB.
-$db = new PDO("mysql:dbname=chatterbox;host=localhost","chatterbox", "chatterbox");
+$db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
 db_query("SET NAMES 'utf8' COLLATE 'utf8_general_ci'");
-
 
 
 function db_query($query,$params = array())
