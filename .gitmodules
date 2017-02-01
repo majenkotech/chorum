@@ -1,0 +1,6 @@
+[submodule "showdown"]
+	path = showdown
+	url = git@github.com:showdownjs/showdown.git
+[submodule "parsedown"]
+	path = parsedown
+	url = git@github.com:erusev/parsedown.git

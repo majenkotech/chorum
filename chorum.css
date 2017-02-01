@@ -1,0 +1,274 @@
+/* THE SPEECH BUBBLE
+------------------------------------------------------------------------------------------------------------------------------- */
+
+.triangle-right {
+  position:relative;
+  padding:15px;
+  margin:1em 0 3em;
+  color:#fff;
+  -webkit-border-radius:10px;
+  -moz-border-radius:10px;
+  border-radius:10px;
+}
+
+/* Variant : for left positioned triangle
+------------------------------------------ */
+
+.triangle-right.left {
+  margin-left:40px;
+}
+
+/* Variant : for right positioned triangle
+------------------------------------------ */
+
+.triangle-right.right {
+  margin-right:40px;
+}
+
+/* THE TRIANGLE
+------------------------------------------------------------------------------------------------------------------------------- */
+
+.triangle-right:after {
+  content:"";
+  position:absolute;
+  bottom:-20px; /* value = - border-top-width - border-bottom-width */
+  left:50px; /* controls horizontal position */
+  border-width:20px 0 0 20px; /* vary these values to change the angle of the vertex */
+  border-style:solid;
+  /* reduce the damage in FF3.0 */
+  display:block;
+  width:0;
+}
+
+/* Variant : left
+------------------------------------------ */
+
+.triangle-right.left:after {
+  top:16px;
+  left:-40px; /* value = - border-left-width - border-right-width */
+  bottom:auto;
+  border-width:15px 40px 0 0; /* vary these values to change the angle of the vertex */
+}
+
+/* Variant : right
+------------------------------------------ */
+
+.triangle-right.right:after {
+  top:16px;
+  right:-40px; /* value = - border-left-width - border-right-width */
+  bottom:auto;
+  left:auto;
+  border-width:15px 0 0 40px; /* vary these values to change the angle of the vertex */
+}
+
+
+body {
+    font-family: 'Handlee', cursive;
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+blockquote {
+    background: #cccc77;
+    padding: 10px;
+    margin: 0px;
+    color: black;
+    border-style: none none none solid;
+    border-width: 8px;
+    border-color: #666622;
+}
+
+.message a {
+    color: #cccccc;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+#messagelist {
+//    overflow: scroll;
+//    max-height: 70%;
+} 
+
+/* Outer container for the whole message including meta */
+.message {
+    display: block;
+    margin-top: 10px;
+}
+
+/* Speech bubble portion */
+.messageBody {
+    display: table-cell;
+}
+
+/* Meta information box */
+.messageMeta-left {
+    display: table-cell;
+    text-align: center;
+    padding-right: 40px;
+    vertical-align: top;
+}
+
+.messageMeta-right {
+    display: table-cell;
+    text-align: center;
+    padding-left: 40px;
+    vertical-align: top;
+}
+
+/* Main text of the message */
+.messageText {
+    max-width: 800px;
+    min-width: 200px;
+}
+
+.messageText img {
+    max-width: 700px;
+}
+
+/* Strap line under the message */
+.messageStrap {
+    border-width: 1px 0px 0px 0px;
+    border-style: solid;
+    border-color: #cccccc;
+    padding-top: 3px;
+    font-size: 10px;
+    font-style: italic;
+    text-align: right;
+}
+
+/* Icons in strap line */
+.messageStrapIcons {
+    float: left;
+}
+
+.messageStrapIcons img {
+    margin-right: 10px;
+    cursor: hand;
+}
+
+.messageEditBox {
+    width: 500px;
+    height: 400px;
+}
+
+.messagePostBox {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-style: solid none none none;
+    border-width: 1px;
+    border-color: black;
+}
+
+.messagePostEntry {
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    width: 100%;
+    height: 100px;
+}
+
+code {
+    background-color: #000000;
+    color: #00FF00;
+    display: block;
+    overflow: auto;
+    padding: 10px;
+//    max-width: 600px;
+    max-height: 500px;
+}
+
+.slim {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.red { background-color: #880000; color: #FFFFFF; }
+.red:after { border-color: transparent #880000; }
+
+.blue { background-color: #000088; color: #FFFFFF; }
+.blue:after { border-color: transparent #000088; }
+
+.green { background-color: #008800; color: #FFFFFF; }
+.green:after { border-color: transparent #008800; }
+
+.mb-left {
+    float: left;
+}
+
+.mb-right {
+    float: right;
+}
+
+.avatar {
+}
+
+
+textarea {
+    width: 100%;
+}
+
+.mbUsername {
+    font-size: 12px;
+}
+
+h1 {
+    margin: 0px;
+    padding: 0px;
+}
+
+h2 {
+    margin: 0px;
+    padding: 0px;
+}
+
+.footer {
+    text-align: center;
+    color: #444444;
+    font-size: 12px;
+    font-style: italic;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-style: solid none none none;
+    border-width: 1px;
+    border-color: black;
+}
+
+.instructions {
+    font-size: 16px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.questiontitle {
+    padding-top: 1px;
+    text-align: center;
+}
+
+.questionbox {
+    border-style: solid;
+    border-color: black;
+    border-width: 3px;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+.questionuser {
+    text-align: center;
+    font-size: 14px;
+}
+
+.signup {
+    text-align: center;
+    text-size: 16px;
+    padding: 10px;
+}
+
+.signup a{
+    font-weight: bold;
+    text-decoration: underline;
+    color: #444444;
+}
