@@ -1,34 +1,61 @@
 <?php
-    session_start();
     require_once("chorum.inc");
 
-    if ($_SESSION['goto'] == "") {
-        $_SESSION['goto'] = $_SERVER['HTTP_REFERER'];
-    }
-
-print_r($_POST);
-
     if ($_POST['username'] != "") {
-        $q = db_query("SELECT * FROM users WHERE name=:name", array("name" => $_POST['username']));
+        $pw = hash('sha256', $_POST['password']);
+        $q = db_query("SELECT * FROM users WHERE name=:name and password=:password", array("name" => $_POST['username'], "password" => $pw));
         if ($r = db_next($q)) {
-            $goto = $_SESSION['goto'];
-            $_SESSION['goto'] = "";
+            if ($r->auth != 'Y') {
+                header("Location: waitauth.php");
+                exit(0);
+            }
             $_SESSION['uid'] = $r->id;
-            if (substr($goto, -11, 11) == "/signin.php") {
-                $goto = "";
-            }
-            if ($goto == "") {
-                $goto = "index.php?topic=1";
-            }
-            header("Location: " . $goto);
+            db_update("users", $r->id, array(
+                "lastip" => $_SERVER['REMOTE_ADDR'],
+                "lastlogin" => time()
+            ));
+            header("Location: index.php");
             exit(0);
         }
-        echo "Error logging in";
+        $error = "Error logging in";
     }
 ?>
-<?php echo $_SESSION['goto']; ?>
-<form action='signin.php' method='POST'>
-    Username: <input type='text' name='username'><br/>
-    Password: <input type='password' name='password'><br/>
-    <input type="submit" />
-</form>
+
+<head>
+<link rel='stylesheet' href='chorum.css'/>
+<title><?php print $siteName; ?> :: Log In</title>
+</head>
+
+<body>
+<?php menu(); ?>
+<div class='login'>
+    <form action='signin.php' method='POST'>
+        <table>
+            <tr>
+                <td>Username:</td>
+                <td><input type='text' name='username'></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type='password' name='password'></td>
+            </tr>
+            <tr>
+                <td colspan=2 align="right">
+                    <input type="submit" value="Log In" />
+                </td>
+            </tr>
+        </table>
+    </form>
+<p>Don't have an account? <a href='signup.php'>Click here</a> to create one!</p>
+</div>
+<?php
+    if ($error != "") {
+?>
+<div class='error'>
+<?php print $error; ?>
+</div>
+<?php
+    }
+    footer();
+?>
+</body>

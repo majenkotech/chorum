@@ -285,6 +285,11 @@ var Chorum = Class.create({
         this.postButton.addClassName("messagePostButton");
         this.postForm.appendChild(this.postButton);
 
+        this.postHint = document.createElement("div");
+        this.postHint.addClassName("messagePostHint");
+        this.postHint.innerHTML = "This forum system supports the Github flavour of Markdown. <a href='https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet'>Click here for instructions on using Markdown</a>";
+        this.postForm.appendChild(this.postHint);
+
         this.postForm.observe("submit", this.postMessage.bind(this));
 
         new Jif("chorum.php", {

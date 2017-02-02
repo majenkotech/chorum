@@ -4,6 +4,8 @@ session_start();
 
 require_once 'config.php';
 require_once 'parsedown/Parsedown.php';
+require_once 'PHPMailer/PHPMailerAutoload.php';
+
 
 // Configure this line for your DB.
 $db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
@@ -61,6 +63,22 @@ function db_id()
     global $db;
     return $db->lastInsertId();
 }
+
+function db_update($table,$id,$data)
+{
+    $values = array();
+    foreach($data as $k=>$v)
+    {
+        $values[] = "`" . $k . "`" . "=:" . $k;
+    }
+    $query = sprintf("UPDATE `%s` set " . implode(",",$values) . " WHERE id=:id",$table);
+    $data['id'] = $id;
+
+    $q = db_query($query,$data);
+    $id = db_id();
+    return $id;
+}
+
 
 function populateStaticMessages($id) {
 
@@ -121,3 +139,91 @@ function populateStaticMessages($id) {
         }
     }
 }
+
+function menu() {
+?>
+<ul class='menu'>
+<li><a href='index.php'>Topic List</a></li>
+<?php
+    if ($_SESSION['uid'] > 0) {
+?>
+<li><a href='newtopic.php'>New Topic</a></li>
+<li><a href='logout.php'>Log Out</a></li>
+<?php
+    } else {
+?>
+<li><a href='signup.php'>Sign Up</a></li>
+<li><a href='signin.php'>Log In</a></li>
+<?php
+    }
+?>
+</ul>
+<?php
+}
+
+function footer() {
+?>
+<div class="footer"><img src='assets/Chorum-small.png'/><br/>Powered by Chorum v0.0.1<br/>&copy;2017 Majenko Technologies</div>
+<?php
+}
+
+function sendEmailAuth($username) {
+    global $db;
+    global $authSubject;
+    global $authBody;
+    global $siteRoot;
+
+    $q = db_query("SELECT * FROM users WHERE name=:u AND auth='N'", array("u" => $username));
+    if ($r = db_next($q)) {
+        $ak = "";
+        $num = rand(30, 50);
+        for ($i = 0; $i < $num; $i++) {
+            $ak .= chr(rand(ord('A'), ord('Z')));
+        }
+        db_update("users", $r->id, array(
+            "authkey" => $ak
+        ));
+        $body = str_replace("%AUTH_URL%", $siteRoot . "/auth.php?auth=" . $ak, $authBody);
+        sendEmail($r->email, $authSubject, $body);
+    }
+}
+
+function sendEmail($to, $subject, $body, $attachments = array()) {
+    global $mailSender;
+    global $mailName;
+    global $mailSMTPHost;
+    global $mailSMTPPort;
+    global $mailSMTPAuth;
+    global $mailSMTPTLS;
+    global $mailSMTPUser;
+    global $mailSMTPPassword;
+
+    $email = new PHPMailer(true);
+    try {
+        $email->setFrom($mailSender, $mailName);
+        $email->Subject = $subject;
+        $email->Body = $body;
+        $email->isHTML(true);
+        $email->addAddress($to);
+        foreach ($attachments as $filename => $data) {
+            $email->addStringAttachment($data, $filename);
+        }
+        $email->Host = $mailSMTPHost;
+        $email->Port = $mailSMTPPort;
+        $email->SMTPAuth = $mailSMTPAuth;
+        $email->SMTPSecure = $mailSMTPTLS ? "tls" : "";
+        if ($mailSMTPAuth) {
+            $email->Username = $mailSMTPUser;
+            $email->Password = $mailSMTPPassword;
+        }
+        $email->isSMTP();
+        $email->send();
+    } catch (phpmailerException $e) {
+        echo $e->errorMessage(); //Pretty error messages from PHPMailer
+        exit(0);
+    } catch (Exception $e) {
+        echo $e->getMessage(); //Boring error messages from anything else!
+        exit(0);
+    }
+}
+

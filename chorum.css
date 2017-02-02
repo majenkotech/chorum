@@ -1,6 +1,17 @@
 /* THE SPEECH BUBBLE
 ------------------------------------------------------------------------------------------------------------------------------- */
 
+@import url('https://fonts.googleapis.com/css?family=Handlee');
+body {
+    font-family: 'Handlee', cursive;
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .triangle-right {
   position:relative;
   padding:15px;
@@ -62,16 +73,6 @@
 }
 
 
-body {
-    font-family: 'Handlee', cursive;
-    width: 960px;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #ffffff;
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 blockquote {
     background: #cccc77;
     padding: 10px;
@@ -126,7 +127,7 @@ blockquote {
 }
 
 .messageText img {
-    max-width: 700px;
+    max-width: 800px;
 }
 
 /* Strap line under the message */
@@ -171,6 +172,19 @@ blockquote {
     height: 100px;
 }
 
+.messagePostHint {
+    text-align: center;
+    display: inline-block;
+    font-size: 14px;
+    width: 100%;
+}
+
+.messagePostHint a {
+    text-decoration: underline;
+    color: #444444;
+    font-weight: bold;
+}
+
 code {
     background-color: #000000;
     color: #00FF00;
@@ -194,6 +208,15 @@ code {
 
 .green { background-color: #008800; color: #FFFFFF; }
 .green:after { border-color: transparent #008800; }
+
+.yellow { background-color: #888800; color: #FFFFFF; }
+.yellow:after { border-color: transparent #008800; }
+
+.purple { background-color: #880088; color: #FFFFFF; }
+.purple:after { border-color: transparent #008800; }
+
+.cyan { background-color: #008888; color: #FFFFFF; }
+.cyan:after { border-color: transparent #008800; }
 
 .mb-left {
     float: left;
@@ -237,12 +260,6 @@ h2 {
     border-color: black;
 }
 
-.instructions {
-    font-size: 16px;
-    text-align: center;
-    margin-top: 10px;
-}
-
 .questiontitle {
     padding-top: 1px;
     text-align: center;
@@ -271,4 +288,82 @@ h2 {
     font-weight: bold;
     text-decoration: underline;
     color: #444444;
+}
+
+ul.menu {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+ul.menu li {
+    display: inline;
+    list-style: none;
+    padding: 10px;
+}
+
+ul.menu li a {
+    text-decoration: underline;
+    color: #444444;
+    font-weight: bold;
+}
+
+div.login {
+    width: 400px;
+    margin: 50px auto 0 auto;
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+}
+
+div.login table {
+    width: 100%;
+}
+
+div.login input[type=text] {
+    width: 100%;
+}
+
+div.login input[type=password] {
+    width: 100%;
+}
+
+div.error {
+    width: 300px;
+    margin: 20px auto 0 auto;
+    text-align: center;
+    background: #883333;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 10px;
+}
+
+div.login a {
+    text-decoration: underline;
+    color: #444444;
+    font-weight: bold;
+} 
+
+div.newpost {
+    width: 100%;
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+} 
+
+div.newpost input[type="text"] {
+    width: 100%;
+}
+
+div.newpost textarea {
+    width: 100%;
+    height: 400px;
 }
