@@ -210,13 +210,13 @@ code {
 .green:after { border-color: transparent #008800; }
 
 .yellow { background-color: #888800; color: #FFFFFF; }
-.yellow:after { border-color: transparent #008800; }
+.yellow:after { border-color: transparent #888800; }
 
 .purple { background-color: #880088; color: #FFFFFF; }
-.purple:after { border-color: transparent #008800; }
+.purple:after { border-color: transparent #880088; }
 
 .cyan { background-color: #008888; color: #FFFFFF; }
-.cyan:after { border-color: transparent #008800; }
+.cyan:after { border-color: transparent #008888; }
 
 .mb-left {
     float: left;
