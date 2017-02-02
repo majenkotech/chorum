@@ -9,9 +9,9 @@
 /* THE SPEECH BUBBLE
 ------------------------------------------------------------------------------------------------------------------------------- */
 
-@import url('https://fonts.googleapis.com/css?family=Handlee');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 body {
-    font-family: 'Handlee', cursive;
+    font-family: 'Open Sans', sans-serif;
     width: 960px;
     margin-left: auto;
     margin-right: auto;
@@ -439,4 +439,12 @@ div.topicTools ul li a {
     text-decoration: underline;
     color: #f0b845;
     font-weight: bold;
+}
+
+img.emoji {
+    width: 22px;
+}
+
+.messageText a {
+    color: inherit;
 }

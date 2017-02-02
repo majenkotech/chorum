@@ -29,3 +29,5 @@ click the link, just copy and paste it into your browser.</p>
 
 <p>Thanks, and good Choruming.</p>
 ";
+
+require_once("config-local.php");

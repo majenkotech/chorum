@@ -131,6 +131,7 @@ var Message = Class.create({
         this.messageText = document.createElement("div");
         this.messageText.addClassName("messageText");
         this.messageText.innerHTML = this.converter.makeHtml(this.data.text);
+        emojify.run(this.messageText);
 
         this.messageStrap = document.createElement("div");
         this.messageStrap.addClassName("messageStrap");
@@ -220,6 +221,16 @@ var Chorum = Class.create({
         this.container = document.getElementById(id);
         this.container.innerHTML = "Loading...";
         this.messages = new Array();
+        this.isLive = true;
+        this.newCount = 0;
+        this.baseTitle = document.title;
+
+        window.onfocus = this.setIsLive.bind(this);
+        window.onblur = this.clrIsLive.bind(this);
+
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
 
         new Jif("chorum.php", {
             method: "post",
@@ -230,6 +241,16 @@ var Chorum = Class.create({
             onSuccess: this.init.bind(this)
         });
 
+    },
+
+    setIsLive: function(e) {
+        this.isLive = true;
+        document.title = this.baseTitle;
+    },
+
+    clrIsLive: function(e) {
+        this.isLive = false;
+        this.newCount = 0;
     },
 
     init: function(r) {
@@ -359,6 +380,15 @@ var Chorum = Class.create({
                 if (v.action == 'P') {
                     this.addPost(v);
                     window.scrollTo(0,document.body.scrollHeight);
+                    if (!this.isLive) {
+                        this.newCount++;
+                        document.title = "(" + this.newCount + ") " + this.baseTitle;
+                        if ("Notification" in window) {
+                            if (Notification.permission === "granted") {
+                                var notification = new Notification("Chorum message from " + v.user + "\n" + v.text.substring(0, 200));
+                            }
+                        }
+                    }
                 } else if (v.action == 'D') {
                     this.removePostById(parseInt(v.id));
                 } else if (v.action == 'E') {
@@ -497,5 +527,6 @@ var Chorum = Class.create({
 });
 
 function startChorum(id, topic) {
+
     new Chorum(id, topic);
 }

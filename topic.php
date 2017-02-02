@@ -7,6 +7,7 @@
 ?>
 <html>
 <head>
+<script src="emojify.js"></script>
 <script src="prototype.js"></script>
 <script src="showdown/dist/showdown.js"></script>
 <script src="chorum.js"></script>
@@ -16,7 +17,7 @@
 <?php if ($user->id > 0) { ?>
 <body onLoad="startChorum('messagelist', <?php print $topic->id; ?>);">
 <?php } else { ?>
-<body>
+<body onLoad="emojify.run($('messagelist'));">
 <?php } ?>
 <?php menu(); ?>
 <div id="messagelist">
