@@ -8,51 +8,44 @@
         array("What is the square root of 391?", "19", "nineteen")
     );
 
-    $goto = $_SESSION['goto'];
-    if ($goto == "") {
-        $goto = $_SERVER['HTTP_REFERER'];
-        $_SESSION['goto'] = $goto;
-    }
-    if (substr($goto, -11, 11) == "/signup.php") {
-        $goto = "index.php";
-    }
-
     if ($_POST['username'] != "") {
-        if ($_POST['password'] != $_POST['password2']) {
+        $username = trim($_POST['username']);
+        $q = db_query("SELECT * FROM users WHERE name=:username", array("username" => $username));
+        if ($r = db_next($q)) {
+            $error = "Error: that username is already taken.";
+        } else if ($_POST['password'] != $_POST['password2']) {
             $error = "Error: your passwords do not match.";
+        } else if (!preg_match("/^(.*)@(.*)$/", trim($_POST['email']), $m)) {
+            $error = "Error: could not validate your email.";
         } else {
-            if (!preg_match("/^(.*)@(.*)$/", trim($_POST['email']), $m)) {
-                $error = "Error: could not validate your email.";
+            $capok = false;
+            $cnum = $_POST['capnum'];
+            $ans = $_POST['captcha'];
+            $cap = $caps[$cnum];
+            array_shift($cap);
+            while (count($cap) > 0) {
+            $a = array_shift($cap);
+            if (strtolower($a) == trim(strtolower($ans))) {
+                    $capok = true;
+                }
+            }
+            if ($capok == false) {
+                $error = "Error: you failed the captcha.";
             } else {
-                $capok = false;
-                $cnum = $_POST['capnum'];
-                $ans = $_POST['captcha'];
-                $cap = $caps[$cnum];
-                array_shift($cap);
-                while (count($cap) > 0) {
-                    $a = array_shift($cap);
-                    if (strtolower($a) == trim(strtolower($ans))) {
-                        $capok = true;
-                    }
-                }
-                if ($capok == false) {
-                    $error = "Error: you failed the captcha.";
-                } else {
-                    $pw = hash('sha256', $_POST['password']);
-                    $sides = array("left", "right");
-                    $colors = array("red", "green", "blue", "yellow", "purple", "cyan");
-                    $id = db_insert("users", array(
-                        "name" => $_POST['username'],
-                        "password" => $pw,
-                        "email" => $_POST['email'],
-                        "side" => $sides[rand(0, count($sides)-1)],
-                        "color" => $colors[rand(0, count($colors)-1)],
-                        "auth" => "N"
-                    ));
-                    sendEmailAuth($_POST['username']);
-                    header("Location: waitauth.php");    
-                    exit(0);
-                }
+                $pw = hash('sha256', $_POST['password']);
+                $sides = array("left", "right");
+                $colors = array("red", "green", "blue", "yellow", "purple", "cyan");
+                $id = db_insert("users", array(
+                    "name" => $username,
+                    "password" => $pw,
+                    "email" => $_POST['email'],
+                    "side" => $sides[rand(0, count($sides)-1)],
+                    "color" => $colors[rand(0, count($colors)-1)],
+                    "auth" => "N"
+                ));
+                sendEmailAuth($_POST['username']);
+                header("Location: waitauth.php");    
+                exit(0);
             }
         }
     }

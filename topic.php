@@ -22,6 +22,7 @@
 <div id="messagelist">
     <?php populateStaticMessages($topic->id); ?>
 </div>
+<?php topicTools($topic->id); ?>
 <?php footer(); ?>
 </body>
 </html>

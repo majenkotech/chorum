@@ -1,3 +1,11 @@
+/* Chorum colors: 
+ *
+ * Orange: f0b845
+ * Green:  5ab942
+ * Olive:  90b942
+ */
+
+
 /* THE SPEECH BUBBLE
 ------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -84,7 +92,7 @@ blockquote {
 }
 
 .message a {
-    color: #cccccc;
+    color: #f0b845;
     font-weight: bold;
     text-decoration: underline;
 }
@@ -118,6 +126,11 @@ blockquote {
     text-align: center;
     padding-left: 40px;
     vertical-align: top;
+}
+
+.messageTitleIcon {
+    padding-left: 20px;
+    margin-left: 20px;
 }
 
 /* Main text of the message */
@@ -181,7 +194,7 @@ blockquote {
 
 .messagePostHint a {
     text-decoration: underline;
-    color: #444444;
+    color: #f0b845;
     font-weight: bold;
 }
 
@@ -206,11 +219,11 @@ code {
 .blue { background-color: #000088; color: #FFFFFF; }
 .blue:after { border-color: transparent #000088; }
 
-.green { background-color: #008800; color: #FFFFFF; }
-.green:after { border-color: transparent #008800; }
+.green { background-color: #90b942; color: #000000; }
+.green:after { border-color: transparent #90b942; }
 
-.yellow { background-color: #888800; color: #FFFFFF; }
-.yellow:after { border-color: transparent #888800; }
+.yellow { background-color: #f0b845; color: #000000; }
+.yellow:after { border-color: transparent #f0b845; }
 
 .purple { background-color: #880088; color: #FFFFFF; }
 .purple:after { border-color: transparent #880088; }
@@ -287,7 +300,7 @@ h2 {
 .signup a{
     font-weight: bold;
     text-decoration: underline;
-    color: #444444;
+    color: #f0b845;
 }
 
 ul.menu {
@@ -305,7 +318,7 @@ ul.menu li {
 
 ul.menu li a {
     text-decoration: underline;
-    color: #444444;
+    color: #f0b845;
     font-weight: bold;
 }
 
@@ -345,7 +358,7 @@ div.error {
 
 div.login a {
     text-decoration: underline;
-    color: #444444;
+    color: #f0b845;
     font-weight: bold;
 } 
 
@@ -366,4 +379,64 @@ div.newpost input[type="text"] {
 div.newpost textarea {
     width: 100%;
     height: 400px;
+}
+
+div.forum {
+    width: 100%;
+}
+
+div.forum table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+div.forum a {
+    text-decoration: underline;
+    color: #f0b845;
+    font-weight: bold;
+}  
+
+div.forum tr {
+    background: #90b942;
+    padding: 0px;
+}
+
+div.forum td {
+    background: #eeeeee;
+    padding: 4px;
+    border-color: #90b942;
+    border-width: 1px;
+    border-style: solid;
+}
+
+div.forum th {
+    border-color: #90b942;
+    border-width: 1px;
+    border-style: solid;
+    background: #90b942;
+    text-align: left;
+    padding: 4px;
+}
+
+div.topicTools {
+    width: 100%;
+}
+
+div.topicTools ul {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+div.topicTools ul li {
+    display: inline;
+    list-style: none;
+    padding: 10px;
+}
+
+div.topicTools ul li a {
+    text-decoration: underline;
+    color: #f0b845;
+    font-weight: bold;
 }

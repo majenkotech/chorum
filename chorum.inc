@@ -143,7 +143,7 @@ function populateStaticMessages($id) {
 function menu() {
 ?>
 <ul class='menu'>
-<li><a href='index.php'>Topic List</a></li>
+<li><a href='index.php'>Forum List</a></li>
 <?php
     if ($_SESSION['uid'] > 0) {
 ?>
@@ -168,7 +168,6 @@ function footer() {
 }
 
 function sendEmailAuth($username) {
-    global $db;
     global $authSubject;
     global $authBody;
     global $siteRoot;
@@ -227,3 +226,109 @@ function sendEmail($to, $subject, $body, $attachments = array()) {
     }
 }
 
+function getTopicsForForum($forum) {
+    $topics = array();
+
+    $tq = db_query("select * from topics where forum = :forum", array("forum" => $forum));
+    while ($tr = db_next($tq)) {
+        $u = db_select("users", $tr->user);
+        $tr->user = $u;
+        $mq = db_query("select count(messages.id) as posts, max(latest_actions.ts) as maxts, max(latest_actions.id) as maxid from messages, latest_actions where messages.topic = :topic and latest_actions.message = messages.id and (latest_actions.action = 'P' or latest_actions.action = 'E')", array("topic" => $tr->id));
+        $mr = db_next($mq);
+        $tr->posts = $mr->posts;
+        $tr->maxts = $mr->maxts;
+        $tr->maxid = $mr->maxid;
+        if ($tr->maxid == "") {
+            $tr->maxid = 0;
+        }
+        if ($tr->maxts == "") {
+            $tr->maxts = $tr->ts;
+        }
+        $topics[] = $tr;
+    }
+
+    usort($topics, "topsort");
+    return $topics;
+}
+
+function topsort($a, $b) {
+    if ($a->maxts == $b->maxts) {
+        return 0;
+    }
+    if ($a->maxts > $b->maxts) {
+        return -1;
+    }
+    return 1;
+}
+
+
+function getAvailableForums() {
+    $isAdmin = false;
+    $isModerator = false;
+    if ($_SESSION['uid'] > 0) {
+        $user = db_select("users", $_SESSION['uid']);
+        if ($user->admin == 'Y') $isAdmin = true;
+        if ($user->moderator == 'Y') $isModerator = true;
+    }
+
+    $forums = array();
+    $q = db_query("SELECT * FROM forums ORDER BY name");
+    while ($r = db_next($q)) {
+        $allowed = true;
+        if ($r->locked == 'Y' && !$isAdmin) {
+            $allowed = false;
+        }
+        if ($allowed) {
+            $forums[$r->id] = $r;
+        }
+    }
+    return $forums;
+}
+
+function canPostInForum($forum) {
+    if ($_SESSION['uid'] > 0) {
+        $user = db_select("users", $_SESSION['uid']);
+        if ($user->admin == 'Y') return true;
+    }
+
+    $forum = db_select("forums", $forum);
+    if (!$forum) return false;
+    if ($forum->locked == 'Y') return false;
+
+    return true;
+}
+
+function topicTools($tid) {
+    if ($_SESSION['uid'] <= 0) {
+        return;
+    }
+    $topic = db_select("topics", $tid);
+    $user = db_select("users", $_SESSION['uid']);
+?>
+<div class='topicTools'>
+<ul>
+<?php 
+    if ($user->admin == 'Y') {
+?>
+<?php
+        if ($topic->locked == 'N') {
+?>
+<li><img src='assets/locked.png'/>
+<a href='lockTopic.php?topic=<?php print $tid; ?>'>Lock topic</a></li>
+<?php   } else { ?>
+<li><img src='assets/locked.png'/>
+<a href='unlockTopic.php?topic=<?php print $tid; ?>'>Unock topic</a></li>
+<?php   }
+    }
+?>
+</div>
+<?php
+}
+
+function isAdmin($uid) {
+    if ($uid <= 0) return false;
+    $user = db_select("users", $uid);
+    if (!$user) return false;
+    if ($user->admin != 'Y') return false;
+    return true;
+}

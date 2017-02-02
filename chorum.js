@@ -250,16 +250,46 @@ var Chorum = Class.create({
         this.questionTitle.addClassName("questiontitle");
         this.questionTitle.innerHTML = this.topicdata.title;
         this.container.appendChild(this.questionTitle);
-
-        this.questionUser = document.createElement("div");
-        this.questionUser.addClassName("questionuser");
-        this.questionUser.innerHTML = this.topicdata.meta;
-        this.container.appendChild(this.questionUser);
+        if (this.topicdata.own) {
+            this.renameIcon = document.createElement("img");
+            this.renameIcon.addClassName("messageTitleIcon");
+            this.renameIcon.src='assets/edit.png';
+            this.questionTitle.appendChild(this.renameIcon);
+            this.renameIcon.observe('click', this.startRename.bind(this));
+        }
 
         this.questionBody = document.createElement("div");
         this.questionBody.addClassName("questionbox");
         this.questionBody.innerHTML = this.converter.makeHtml(this.topicdata.text);
         this.container.appendChild(this.questionBody);
+
+        this.questionStrap = document.createElement("div");
+        this.questionStrap.addClassName("messageStrap");
+        this.questionStrap.innerHTML = this.topicdata.meta;
+        this.questionBody.appendChild(this.questionStrap);
+
+        this.questionStrapIcons = document.createElement("div");
+        this.questionStrapIcons.addClassName("messageStrapIcons");
+        this.questionStrap.appendChild(this.questionStrapIcons);
+
+        if (this.topicdata.own) {
+            this.delIcon = document.createElement("img");
+            this.delIcon.src='assets/delete.png';
+            this.questionStrapIcons.appendChild(this.delIcon);
+
+            this.editIcon = document.createElement("img");
+            this.editIcon.src='assets/edit.png';
+            this.questionStrapIcons.appendChild(this.editIcon);
+        }
+
+        this.reportIcon = document.createElement("img");
+        this.reportIcon.src='assets/report.png';
+        this.questionStrapIcons.appendChild(this.reportIcon);
+
+        this.quoteIcon = document.createElement("img");
+        this.quoteIcon.src = 'assets/quote.png';
+        this.questionStrapIcons.appendChild(this.quoteIcon);
+        this.quoteIcon.observe('click', this.quoteMessage.bind(this));
 
         this.messageList = document.createElement("div");
         this.messageList.addClassName("messageList");
@@ -281,7 +311,7 @@ var Chorum = Class.create({
 
         this.postButton = document.createElement("input");
         this.postButton.setAttribute("type", "submit");
-        this.postButton.setValue("Post");
+        this.postButton.value = "Post"; //setValue("Post");
         this.postButton.addClassName("messagePostButton");
         this.postForm.appendChild(this.postButton);
 
@@ -448,6 +478,10 @@ var Chorum = Class.create({
         this.postEntry.setValue("");
     },
 
+    quoteMessage: function(e) {
+        this.insertQuote(this.topicdata.text);
+    },
+
     insertQuote: function(text) {
         var exist = this.postEntry.getValue();
         exist += "\n\n";
@@ -456,6 +490,9 @@ var Chorum = Class.create({
             exist += "> " + lines[i] + "\n";
         }
         this.postEntry.setValue(exist);
+    },
+
+    startRename: function(e) {
     }
 });
 

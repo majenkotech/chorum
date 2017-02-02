@@ -21,6 +21,7 @@ if ($func == "init") {
         "content" => "init",
         "topic" => $topic->id,
         "data" => array(
+            "own" => ($owner->id == $user->id),
             "title" => $topic->title,
             "text" => $topic->message,
             "meta" => "Asked by $owner->name at " . date("H:i", $topic->ts) . " on " . date("d M Y", $topic->ts)
