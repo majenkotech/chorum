@@ -35,7 +35,7 @@
 
     foreach ($topics as $topic) {
 ?>
-        <tr>
+        <tr <?php if ($topic->sticky) { ?> class='sticky' <?php } ?>>
             <td width="100%">
                 <a href='topic.php?topic=<?php print $topic->id; ?>'>
                     <?php print $topic->title; ?>

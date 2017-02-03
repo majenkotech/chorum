@@ -28,7 +28,7 @@ s<?php
     $c = 0;
     foreach ($topics as $topic) {
 ?>
-        <tr>
+        <tr <?php if ($topic->sticky) { ?> class='sticky' <?php } ?>>
             <td width="100%"><a href='topic.php?topic=<?php print $topic->id; ?>'><?php print $topic->title; ?></a></td>
             <td nowrap align=center><?php print $topic->user->name; ?></td>
             <td nowrap align=center><?php print $topic->posts; ?></td>

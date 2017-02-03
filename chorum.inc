@@ -230,12 +230,13 @@ function sendEmail($to, $subject, $body, $attachments = array()) {
 function getTopicsForForum($forum) {
     $topics = array();
 
-    $tq = db_query("select * from topics where forum = :forum", array("forum" => $forum));
+    $tq = db_query("select * from topics where forum = :forum and sticky='N'", array("forum" => $forum));
     while ($tr = db_next($tq)) {
         $u = db_select("users", $tr->user);
         $tr->user = $u;
         $mq = db_query("select count(messages.id) as posts, max(latest_actions.ts) as maxts, max(latest_actions.id) as maxid from messages, latest_actions where messages.topic = :topic and latest_actions.message = messages.id and (latest_actions.action = 'P' or latest_actions.action = 'E')", array("topic" => $tr->id));
         $mr = db_next($mq);
+        $tr->sticky = false;
         $tr->posts = $mr->posts;
         $tr->maxts = $mr->maxts;
         $tr->maxid = $mr->maxid;
@@ -249,7 +250,27 @@ function getTopicsForForum($forum) {
     }
 
     usort($topics, "topsort");
-    return $topics;
+    $tq = db_query("select * from topics where forum = :forum and sticky='Y' order by ts", array("forum" => $forum));
+    $sticky = array();
+    while ($tr = db_next($tq)) {
+        $u = db_select("users", $tr->user);
+        $tr->user = $u;
+        $mq = db_query("select count(messages.id) as posts, max(latest_actions.ts) as maxts, max(latest_actions.id) as maxid from messages, latest_actions where messages.topic = :topic and latest_actions.message = messages.id and (latest_actions.action = 'P' or latest_actions.action = 'E')", array("topic" => $tr->id));
+        $mr = db_next($mq);
+        $tr->sticky = true;
+        $tr->posts = $mr->posts;
+        $tr->maxts = $mr->maxts;
+        $tr->maxid = $mr->maxid;
+        if ($tr->maxid == "") {
+            $tr->maxid = 0;
+        }
+        if ($tr->maxts == "") {
+            $tr->maxts = $tr->ts;
+        }
+        $sticky[] = $tr;
+    }
+    
+    return array_merge($sticky, $topics);
 }
 
 function topsort($a, $b) {
