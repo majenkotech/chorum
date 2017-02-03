@@ -10,7 +10,41 @@ if (!$user) {
 
 $func = $_POST['action'];
 
-if ($func == "init") {
+if ($func == "edittopic") {
+    $topic = db_select("topics", $_POST['topic']);
+    if (!$topic) {
+        header("HTTP/1.0 400 Bad Request");
+        exit(0);
+    }
+    $owner = db_select("users", $topic->user);
+    if ($owner->id != $user->id) {
+        header("HTTP/1.0 403 Forbidden");
+        exit(0);
+    }
+
+    db_update("topics", $topic->id, array(
+        "message" => $_POST['message']
+    ));
+}
+
+if ($func == "rename") {
+    $topic = db_select("topics", $_POST['topic']);
+    if (!$topic) {
+        header("HTTP/1.0 400 Bad Request");
+        exit(0);
+    }
+    $owner = db_select("users", $topic->user);
+    if ($owner->id != $user->id) {
+        header("HTTP/1.0 403 Forbidden");
+        exit(0);
+    }
+
+    db_update("topics", $topic->id, array(
+        "title" => $_POST['title']
+    ));
+}
+
+if (($func == "init") || ($func == "rename") || ($func == "edittopic")) {
     $topic = db_select("topics", $_POST['topic']);
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");

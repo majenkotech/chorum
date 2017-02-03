@@ -102,7 +102,7 @@ var Message = Class.create({
         this.editForm.appendChild(br);
         var submit = document.createElement("input");
         submit.setAttribute("type", "submit");
-        submit.setValue("Save");
+        submit.setAttribute("value", "Save");
         var cancel = document.createElement("input");
         cancel.setAttribute("type", "button");
         cancel.setValue("Cancel");
@@ -220,7 +220,6 @@ var Chorum = Class.create({
         this.timerPeriod = 1000;
         this.container = document.getElementById(id);
         this.container.innerHTML = "Loading...";
-        this.messages = new Array();
         this.isLive = true;
         this.newCount = 0;
         this.baseTitle = document.title;
@@ -266,6 +265,7 @@ var Chorum = Class.create({
         this.topicdata = r.responseJSON.data;
 
         this.container.innerHTML = "";
+        this.messages = new Array();
 
         this.questionTitle = document.createElement("h1");
         this.questionTitle.addClassName("questiontitle");
@@ -301,6 +301,7 @@ var Chorum = Class.create({
             this.editIcon = document.createElement("img");
             this.editIcon.src='assets/edit.png';
             this.questionStrapIcons.appendChild(this.editIcon);
+            this.editIcon.observe("click", this.startEdit.bind(this));
         }
 
         this.reportIcon = document.createElement("img");
@@ -338,7 +339,7 @@ var Chorum = Class.create({
 
             this.postButton = document.createElement("input");
             this.postButton.setAttribute("type", "submit");
-            this.postButton.value = "Post"; //setValue("Post");
+            this.postButton.setAttribute("value", "Post");
             this.postButton.addClassName("messagePostButton");
             this.postForm.appendChild(this.postButton);
 
@@ -530,10 +531,120 @@ var Chorum = Class.create({
     },
 
     startRename: function(e) {
+        this.questionTitle.innerHTML="";
+        this.titleEditForm = document.createElement("form");
+        this.titleEditForm.setAttribute("action", "#");
+        this.titleEditForm.setAttribute("method", "POST");
+        this.questionTitle.appendChild(this.titleEditForm);
+        this.titleEditBox = document.createElement("input");
+        this.titleEditBox.setAttribute("name", "title");
+        this.titleEditBox.setValue(this.topicdata.title);
+        this.titleEditForm.appendChild(this.titleEditBox);
+        this.titleEditSave = document.createElement("input");
+        this.titleEditSave.setAttribute("type", "submit");
+        this.titleEditSave.setAttribute("value", "Save");
+        this.titleEditForm.appendChild(this.titleEditSave);
+        this.titleEditCancel = document.createElement("input");
+        this.titleEditCancel.setAttribute("type", "button");
+        this.titleEditCancel.setAttribute("value", "Cancel");
+        this.titleEditForm.appendChild(this.titleEditCancel);
+
+        this.titleEditForm.observe("submit", this.doRename.bind(this));
+        this.titleEditCancel.observe("click", this.undoRename.bind(this));
+    },
+    doRename: function(e) {
+        e.stop();
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "rename",
+                topic: this.topic,
+                lastid: this.lastid,
+                title: this.titleEditBox.getValue()
+            },
+            onSuccess: this.init.bind(this)
+        });
+    },
+    undoRename: function(e) {
+        this.questionTitle.innerHTML = this.topicdata.title;
+        if (this.topicdata.own) {
+            this.renameIcon = document.createElement("img");
+            this.renameIcon.addClassName("messageTitleIcon");
+            this.renameIcon.src='assets/edit.png';
+            this.questionTitle.appendChild(this.renameIcon);
+            this.renameIcon.observe('click', this.startRename.bind(this));
+        }
+    },
+    startEdit: function(e) {
+        this.questionBody.innerHTML = "";
+        this.editForm = document.createElement("form");
+        this.editForm.setAttribute("action", "#");
+        this.editForm.setAttribute("method", "POST");
+        this.questionBody.appendChild(this.editForm);
+        this.editBox = document.createElement("textarea");
+        this.editBox.innerHTML = this.topicdata.text;
+        this.editForm.appendChild(this.editBox);
+        this.editForm.appendChild(document.createElement("br"));
+        this.editSave = document.createElement("input");
+        this.editSave.setAttribute("type", "submit");
+        this.editSave.setAttribute("value", "Save");
+        this.editForm.appendChild(this.editSave);
+        this.editCancel = document.createElement("input");
+        this.editCancel.setAttribute("type", "button");
+        this.editCancel.setAttribute("value", "Cancel");
+        this.editForm.appendChild(this.editCancel);
+
+        this.editForm.observe("submit", this.doEdit.bind(this));
+        this.editCancel.observe("click", this.undoEdit.bind(this));
+        
+    },
+    doEdit: function(e) {
+        e.stop();
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "edittopic",
+                topic: this.topic,
+                lastid: this.lastid,
+                message: this.editBox.getValue()
+            },
+            onSuccess: this.init.bind(this)
+        });
+    },
+    undoEdit: function(e) {
+        this.questionBody.innerHTML = this.converter.makeHtml(this.topicdata.text);
+        this.questionStrap = document.createElement("div");
+        this.questionStrap.addClassName("messageStrap");
+        this.questionStrap.innerHTML = this.topicdata.meta;
+        this.questionBody.appendChild(this.questionStrap);
+
+        this.questionStrapIcons = document.createElement("div");
+        this.questionStrapIcons.addClassName("messageStrapIcons");
+        this.questionStrap.appendChild(this.questionStrapIcons);
+
+        if (this.topicdata.own) {
+            this.delIcon = document.createElement("img");
+            this.delIcon.src='assets/delete.png';
+            this.questionStrapIcons.appendChild(this.delIcon);
+
+            this.editIcon = document.createElement("img");
+            this.editIcon.src='assets/edit.png';
+            this.questionStrapIcons.appendChild(this.editIcon);
+            this.editIcon.observe("click", this.startEdit.bind(this));
+        }
+
+        this.reportIcon = document.createElement("img");
+        this.reportIcon.src='assets/report.png';
+        this.questionStrapIcons.appendChild(this.reportIcon);
+
+        this.quoteIcon = document.createElement("img");
+        this.quoteIcon.src = 'assets/quote.png';
+        this.questionStrapIcons.appendChild(this.quoteIcon);
+        this.quoteIcon.observe('click', this.quoteMessage.bind(this));
+
     }
 });
 
 function startChorum(id, topic) {
-
     new Chorum(id, topic);
 }
