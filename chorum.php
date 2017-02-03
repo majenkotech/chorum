@@ -21,10 +21,11 @@ if ($func == "init") {
         "content" => "init",
         "topic" => $topic->id,
         "data" => array(
+            "locked" => $topic->locked == 'Y',
             "own" => ($owner->id == $user->id),
             "title" => $topic->title,
             "text" => $topic->message,
-            "meta" => "Asked by $owner->name at " . date("H:i", $topic->ts) . " on " . date("d M Y", $topic->ts)
+            "meta" => "Posted by $owner->name at " . date("H:i", $topic->ts) . " on " . date("d M Y", $topic->ts)
         )
     );
     header("Content-type: application/json");
@@ -155,20 +156,22 @@ if ($func == "post") {
         exit(0);
     }
 
-    $text = $_POST['message'];
-    $text = trim($text);
-    if ($text != "") {
-        $mid = db_insert("messages", array(
-            "topic" => $topic->id,
-            "user" => $user->id,
-            "ts" => time()));
+    if ($topic->locked != 'Y') {
+        $text = $_POST['message'];
+        $text = trim($text);
+        if ($text != "") {
+            $mid = db_insert("messages", array(
+                "topic" => $topic->id,
+                "user" => $user->id,
+                "ts" => time()));
 
-        db_insert("actions", array(
-            "message" => $mid,
-            "action" => "P",
-            "ts" => time(),
-            "body" => $text
-        ));
+            db_insert("actions", array(
+                "message" => $mid,
+                "action" => "P",
+                "ts" => time(),
+                "body" => $text
+            ));
+        }
     }
 }
 

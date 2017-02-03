@@ -319,29 +319,36 @@ var Chorum = Class.create({
         this.postBox.addClassName("messagePostBox");
         this.container.appendChild(this.postBox);
 
-        this.postForm = document.createElement("form");
-        this.postForm.setAttribute("action", "#");
-        this.postForm.setAttribute("method", "POST");
+        if (this.topicdata.locked) {
+            this.postHint = document.createElement("div");
+            this.postHint.addClassName("messagePostHint");
+            this.postHint.innerHTML = "This topic is locked. No more posts may be added.";
+            this.postBox.appendChild(this.postHint);
+        } else {
+            this.postForm = document.createElement("form");
+            this.postForm.setAttribute("action", "#");
+            this.postForm.setAttribute("method", "POST");
 
-        this.postBox.appendChild(this.postForm);
+            this.postBox.appendChild(this.postForm);
 
-        this.postEntry = document.createElement("textarea");
-        this.postEntry.addClassName("messagePostEntry");
-        this.postForm.appendChild(this.postEntry);
-        this.postForm.appendChild(document.createElement("br"));
+            this.postEntry = document.createElement("textarea");
+            this.postEntry.addClassName("messagePostEntry");
+            this.postForm.appendChild(this.postEntry);
+            this.postForm.appendChild(document.createElement("br"));
 
-        this.postButton = document.createElement("input");
-        this.postButton.setAttribute("type", "submit");
-        this.postButton.value = "Post"; //setValue("Post");
-        this.postButton.addClassName("messagePostButton");
-        this.postForm.appendChild(this.postButton);
+            this.postButton = document.createElement("input");
+            this.postButton.setAttribute("type", "submit");
+            this.postButton.value = "Post"; //setValue("Post");
+            this.postButton.addClassName("messagePostButton");
+            this.postForm.appendChild(this.postButton);
 
-        this.postHint = document.createElement("div");
-        this.postHint.addClassName("messagePostHint");
-        this.postHint.innerHTML = "This forum system supports the Github flavour of Markdown. <a href='https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet'>Click here for instructions on using Markdown</a>";
-        this.postForm.appendChild(this.postHint);
+            this.postHint = document.createElement("div");
+            this.postHint.addClassName("messagePostHint");
+            this.postHint.innerHTML = "This forum system supports the Github flavour of Markdown. <a href='https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet' target='_blank'>Click here for instructions on using Markdown</a><br/>The full range of emoticons are supported. The complete list of codes can be found <a href='http://www.webpagefx.com/tools/emoji-cheat-sheet/' target='_blank'>here.</a>";
+            this.postForm.appendChild(this.postHint);
 
-        this.postForm.observe("submit", this.postMessage.bind(this));
+            this.postForm.observe("submit", this.postMessage.bind(this));
+        }
 
         new Jif("chorum.php", {
             method: "post",
