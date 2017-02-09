@@ -6,10 +6,22 @@ require_once 'config.php';
 require_once 'parsedown/Parsedown.php';
 require_once 'PHPMailer/PHPMailerAutoload.php';
 
-
 // Configure this line for your DB.
 $db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
 db_query("SET NAMES 'utf8' COLLATE 'utf8_general_ci'");
+
+if (array_key_exists("ChorumAuthKey", $_COOKIE)) {
+    if (array_key_exists("ChorumAuthUser", $_COOKIE)) {
+        $q = db_query("SELECT * FROM users WHERE persist=:key AND name=:username AND persist!=''", array(
+            "key" => $_COOKIE['ChorumAuthKey'],
+            "username" => $_COOKIE['ChorumAuthUser']
+        ));
+        if ($r = db_next($q)) {
+            $_SESSION['uid'] = $r->id;
+        }
+    }
+}
+
 
 $user = db_select("users", $_SESSION['uid']);
 
@@ -172,6 +184,7 @@ function footer() {
 ?>
 <div class="footer"><img src='assets/Chorum-small.png'/><br/>Powered by Chorum v0.0.1<br/>&copy;2017 Majenko Technologies</div>
 <?php
+    cookiePopup();
 }
 
 function sendEmailAuth($username) {
@@ -426,4 +439,17 @@ function getMessageData($msgid) {
         "voted" => $voted
     );
     return $msg;
+}
+
+function cookiePopup() {
+    if (array_key_exists("CookiePopup", $_COOKIE)) {
+        return;
+    }
+?>
+<div class='cookiePopup' id='cookiePopup'>
+<p>This site uses cookies to maintain your current login session and improve your browsing experience. By continuing to use this site you agree to the placing of these
+cookies on your computer or device.</p>
+<a href='#' onClick='closeCookiePopup();'>Close this popup</a>
+</div>
+<?php
 }

@@ -10,9 +10,21 @@
                 exit(0);
             }
             $_SESSION['uid'] = $r->id;
+            $persist = '';
+            if (array_key_exists("stay", $_POST)) {
+                for ($i = 0; $i < 40; $i++) {
+                    $persist .= chr(rand(ord('A'), ord('Z')));
+                    setCookie("ChorumAuthUser", $r->name, time() + 31536000);
+                    setCookie("ChorumAuthKey", $persist, time() + 31536000);
+                }
+            } else {
+                setCookie("ChorumAuthKey", "", 0);
+                setCookie("ChorumAuthUser", "", 0);
+            }
             db_update("users", $r->id, array(
                 "lastip" => $_SERVER['REMOTE_ADDR'],
-                "lastlogin" => time()
+                "lastlogin" => time(),
+                "persist" => $persist
             ));
             header("Location: index.php");
             exit(0);
@@ -39,6 +51,10 @@
                 <td>Password:</td>
                 <td><input type='password' name='password'></td>
             </tr>
+            <tr>
+                <td colspan=2><input type='checkbox' name='stay'>Keep me signed in</input></td>
+            </tr>
+            
             <tr>
                 <td colspan=2 align="right">
                     <input type="submit" value="Log In" />

@@ -15,7 +15,7 @@ body {
     width: 960px;
     margin-left: auto;
     margin-right: auto;
-    background-color: #ffffff;
+    background-color: #eeeeee;
     background-image: url("assets/bg.png");
     margin-top: 0;
     margin-bottom: 0;
@@ -322,7 +322,7 @@ h2 {
     border-width: 3px;
     border-radius: 20px;
     padding: 10px;
-    background-color: #ffffff;
+    background-color: #eeeeee;
 }
 
 .questionbox img {
@@ -372,6 +372,7 @@ div.login {
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
+    background-color: #eeeeee;
     padding: 20px;
     text-align: center;
 }
@@ -411,6 +412,7 @@ div.newpost {
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
+    background-color: #eeeeee;
     padding: 20px;
     text-align: center;
 } 
@@ -514,4 +516,25 @@ div.forum h1 {
 .voteUsed {
     opacity: 0.3;
     filter: alpha(opacity=30);
+}
+
+.cookiePopup {
+    position: fixed;
+    width: 100%;
+    left: 0px;
+    z-index: 65535;
+    text-align: center;
+    bottom: 0px;
+    background-color: #550000;
+    color: #eeeeee;
+}
+
+.cookiePopup p {
+    margin: 0px;
+}
+
+.cookiePopup a {
+    color: #90b942;
+    font-weight: bold;
+
 }

@@ -719,3 +719,12 @@ var Chorum = Class.create({
 function startChorum(id, topic) {
     new Chorum(id, topic);
 }
+
+function closeCookiePopup(name,value,days) {
+    $('cookiePopup').style.display='none';
+    var expires = "";
+    var date = new Date();
+    date.setTime(date.getTime() + (365*24*60*60*1000));
+    expires = date.toUTCString();
+    document.cookie = "CookiePopup=1; expires=" + expires + "; path=/";
+}
