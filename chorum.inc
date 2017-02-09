@@ -11,6 +11,8 @@ require_once 'PHPMailer/PHPMailerAutoload.php';
 $db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
 db_query("SET NAMES 'utf8' COLLATE 'utf8_general_ci'");
 
+$user = db_select("users", $_SESSION['uid']);
+
 
 function db_query($query,$params = array())
 {
@@ -105,10 +107,14 @@ function populateStaticMessages($id) {
         }
         $owner = db_select("users", $message->user);
 
+        $vq = db_query("SELECT SUM(value) AS rating FROM likes WHERE message=:id", array("id" => $message->id));
+        $vr = db_next($vq);
+        $votes = $vr->rating - 0;
+
         $text = $pd->text($action->body);
-        $strap = "Posted " . date("d M Y, H:i", $action->ts) . "";
+        $strap = "Posted " . date("d M Y, H:i", $action->ts) . ", " . $votes . " votes";
         if ($action->action == 'E') {
-            $strap = "Edited " . date("d M Y, H:i", $action->ts) . "";
+            $strap = "Edited " . date("d M Y, H:i", $action->ts) . ", " . $votes . " votes";
         }
         if ($owner->side == "left") {
 ?>
@@ -353,4 +359,71 @@ function isAdmin($uid) {
     if (!$user) return false;
     if ($user->admin != 'Y') return false;
     return true;
+}
+
+function audit($msg) {
+    db_insert("audit", array(
+        "user" => $_SESSION['uid'],
+        "log" => $msg,
+        "ts" => time()
+    ));
+}
+
+function getMessageData($msgid) {
+    global $user;
+
+    $message = db_select("messages", $msgid);
+
+    $actionq = db_query("SELECT * FROM actions WHERE message=:message ORDER BY id DESC", array("message" => $message->id));
+    $action = db_next($actionq);
+
+    $owner = db_select("users", $message->user);
+    $text = $action->body;
+
+    $q = db_query("SELECT SUM(value) AS rating FROM likes WHERE message=:id", array("id" => $message->id));
+    if ($likes = db_next($q)) {
+        $rating = $likes->rating - 0;
+    } else {
+        $rating = 0;
+    }
+
+    $q = db_query("SELECT SUM(value) AS rating FROM likes,messages WHERE messages.user=:id and likes.message=messages.id", array("id" => $owner->id));
+    if ($likes = db_next($q)) {
+        $userrating = $likes->rating - 0;
+    } else {
+        $userrating = 0;
+    }
+
+    $q = db_query("SELECT value FROM likes WHERE message=:msg AND user=:usr", array("msg" => $message->id, "usr" => $_SESSION['uid']));
+    if ($r = db_next($q)) {
+        $voted = $r->value - 0;
+    } else {
+        $voted = 0;
+    }
+
+    $strap = "Posted " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+    if ($action->action == 'E') {
+        $strap = "Edited " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+    }
+
+    $msg = array(
+        "user" => $owner->name,
+        "ts" => $message->ts,
+        "action" => $action->action,
+        "aid" => $action->id,
+        "text" => $text,
+        "strap" => $strap,
+        "avatar" => md5(strtolower(trim($owner->email))),
+        "color" => $owner->color,
+        "side" => $owner->side,
+        "id" => $message->id,
+        "date" => date("d M Y", $message->ts),
+        "time" => date("H:i", $message->ts),
+        "own" => ($owner->id == $user->id),
+        "uid" => $user->id,
+        "rating" => $rating,
+        "userrating" => $userrating,
+        "voted" => $voted
+    );
+    return $msg;
 }

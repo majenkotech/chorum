@@ -33,7 +33,7 @@ var Message = Class.create({
     initialize: function(chorum, data) {
         this.chorum = chorum;
         this.data = data;
-        showdown.setFlavor('github');
+
         this.converter = new showdown.Converter({
             simplifiedAutoLink: true,
             excludeTrailingPunctuationFromURLs: true,
@@ -63,6 +63,11 @@ var Message = Class.create({
         this.username.innerHTML = this.data.user;
         this.metaBox.appendChild(this.username);
 
+        this.userVotes = document.createElement("div");
+        this.userVotes.addClassName("messageMetaVotes");
+        this.userVotes.innerHTML = "Rating: " + this.data.userrating;
+        this.metaBox.appendChild(this.userVotes);
+
         this.messageBox = document.createElement("div");
         this.messageBox.addClassName("messageBody");
         this.messageBox.addClassName("triangle-right");
@@ -80,6 +85,18 @@ var Message = Class.create({
         container.appendChild(this.br);
         this.container = container;
 
+        this.updateLinks(this.messageText);
+
+    },
+
+    updateLinks: function(ob) {
+        for (var i = 0; i < ob.children.length; i++) {
+            if (ob.children[i].tagName == "A") {
+                ob.children[i].setAttribute("target", "_blank");
+            } else {
+                this.updateLinks(ob.children[i]);
+            }
+        }
     },
 
     deletePost: function(e) {
@@ -141,6 +158,7 @@ var Message = Class.create({
         this.icons.addClassName("messageStrapIcons");
         this.messageStrap.appendChild(this.icons);
 
+
         if (this.data.own) {
             this.delIcon = document.createElement("img");
             this.delIcon.src = "assets/delete.png";
@@ -153,6 +171,24 @@ var Message = Class.create({
             this.editIcon.observe("click", this.editPost.bind(this));
             this.icons.append(this.editIcon);
             this.editIcon.setAttribute("title", "Edit Post");
+        } else {
+            this.upIcon = document.createElement("img");
+            this.upIcon.src = "assets/thumbup.png";
+            if (this.data.voted == 1) {
+                this.upIcon.addClassName("voteUsed");
+            } 
+            this.upIcon.observe("click", this.upvote.bind(this));
+            this.upIcon.setAttribute("title", "Up-vote this post");
+            this.icons.appendChild(this.upIcon);
+
+            this.downIcon = document.createElement("img");
+            this.downIcon.src = "assets/thumbdown.png";
+            if (this.data.voted == -1) {
+                this.downIcon.addClassName("voteUsed");
+            } 
+            this.downIcon.observe("click", this.downvote.bind(this));
+            this.downIcon.setAttribute("title", "Down-vote this post");
+            this.icons.appendChild(this.downIcon);
         }
 
         this.reportIcon = document.createElement("img");
@@ -180,6 +216,30 @@ var Message = Class.create({
         this.tagImages(this.messageText);
     },
 
+    upvote: function(e) {
+        if (this.data.voted == -1) {
+            this.chorum.upvote(this.data.id);
+            this.downIcon.removeClassName("voteUsed");
+            this.data.voted = 0;
+        } else if (this.data.voted == 0) {
+            this.chorum.upvote(this.data.id);
+            this.upIcon.addClassName("voteUsed");
+            this.data.voted = 1;
+        }
+    },
+
+    downvote: function(e) {
+        if (this.data.voted == 1) {
+            this.chorum.downvote(this.data.id);
+            this.upIcon.removeClassName("voteUsed");
+            this.data.voted = 0;
+        } else if (this.data.voted == 0) {
+            this.chorum.downvote(this.data.id);
+            this.downIcon.addClassName("voteUsed");
+            this.data.voted = -1;
+        }
+    },
+
     reportPost: function(e) {
     },
 
@@ -200,7 +260,7 @@ var Message = Class.create({
             if (ob.children[i].tagName == "IMG") {
                 var img = ob.children[i].cloneNode(true);
                 var a = document.createElement("a");
-                a.setAttribute("target", "_new");
+//                a.setAttribute("target", "_new");
                 a.href = ob.children[i].src;
                 a.appendChild(img);
                 ob.replaceChild(a, ob.children[i]);
@@ -214,6 +274,16 @@ var Message = Class.create({
 var Chorum = Class.create({
 
     initialize: function(id, topic) {
+        showdown.setFlavor('github');
+        this.converter = new showdown.Converter({
+            simplifiedAutoLink: true,
+            excludeTrailingPunctuationFromURLs: true,
+            strikethrough: true,
+            tables: true,
+            tasklists: true,
+            encodeEmails: true
+        });
+
         this.id = id;
         this.topic = topic;
         this.lastid = 0;
@@ -226,6 +296,8 @@ var Chorum = Class.create({
 
         window.onfocus = this.setIsLive.bind(this);
         window.onblur = this.clrIsLive.bind(this);
+
+        this.notifications = true;
 
         if ("Notification" in window) {
             Notification.requestPermission();
@@ -253,15 +325,6 @@ var Chorum = Class.create({
     },
 
     init: function(r) {
-        showdown.setFlavor('github');
-        this.converter = new showdown.Converter({
-            simplifiedAutoLink: true,
-            excludeTrailingPunctuationFromURLs: true,
-            strikethrough: true,
-            tables: true,
-            tasklists: true,
-            encodeEmails: true
-        });
         this.topicdata = r.responseJSON.data;
 
         this.container.innerHTML = "";
@@ -366,9 +429,12 @@ var Chorum = Class.create({
         if (r.status == 204) {
             if (this.timerPeriod < 10000) this.timerPeriod *= 1.1;
             clearTimeout(this.updateTimer);
-            this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
+            if (!this.topicdata.locked) {
+                this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
+            }
             return;
         }
+        this.notifications = r.responseJSON.notifications;
         var aid = Number(r.responseJSON.maxid);
         if (aid > this.lastid) {
             this.lastid = aid;
@@ -380,7 +446,9 @@ var Chorum = Class.create({
         } else if (type == "load") {
             this.messageList.innerHTML = "";
             r.responseJSON.data.each(function(v, i) {
-                this.addPost(v);
+                if (v.action != 'D') {
+                    this.addPost(v);
+                }
             }.bind(this));
         } else if (type == "update") {
             r.responseJSON.data.each(function(v, i) {
@@ -393,7 +461,9 @@ var Chorum = Class.create({
                         document.title = "(" + this.newCount + ") " + this.baseTitle;
                         if ("Notification" in window) {
                             if (Notification.permission === "granted") {
-                                var notification = new Notification("Chorum message from " + v.user + "\n" + v.text.substring(0, 200));
+                                if (this.notifications) {
+                                    var notification = new Notification("Chorum message from " + v.user + "\n" + v.text.substring(0, 200));
+                                }
                             }
                         }
                     }
@@ -408,7 +478,9 @@ var Chorum = Class.create({
         }
 
         clearTimeout(this.updateTimer);
-        this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
+        if (!this.topicdata.locked) {
+            this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
+        }
     },
 
     update: function() {
@@ -422,31 +494,6 @@ var Chorum = Class.create({
             onSuccess: this.populate.bind(this)
         });
     },
-
-    replacePost: function(post) {
-        var kid = this.getPostById(post.id);
-        if (kid) {
-            showdown.setFlavor('github');
-
-            var converter = new showdown.Converter({
-                simplifiedAutoLink: true,
-                excludeTrailingPunctuationFromURLs: true,
-                strikethrough: true,
-                tables: true,
-                tasklists: true,
-                encodeEmails: true
-            });
-            var p = kid.children[1].children[0];
-            if (kid.dataset.side == 'right') {
-                p = kid.children[0].children[0];
-            }
-            p.innerHTML = "<p class='messageBody'>" + converter.makeHtml(post.text) + "</p>";
-            kid.dataset.originaltext = post.text;
-            if (post.strap != "") {
-                p.innerHTML += "<div class='strap'>" + post.strap + "</div>";
-            }
-        }
-    }, 
 
     addPost: function(post) {
         var msg = new Message(this, post);
@@ -642,6 +689,30 @@ var Chorum = Class.create({
         this.questionStrapIcons.appendChild(this.quoteIcon);
         this.quoteIcon.observe('click', this.quoteMessage.bind(this));
 
+    },
+    upvote: function(id) {
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "upvote",
+                topic: this.topic,
+                lastid: this.lastid,
+                message: id
+            },
+            onSuccess: this.populate.bind(this)
+        });
+    },
+    downvote: function(id) {
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "downvote",
+                topic: this.topic,
+                lastid: this.lastid,
+                message: id
+            },
+            onSuccess: this.populate.bind(this)
+        });
     }
 });
 

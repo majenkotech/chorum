@@ -8,6 +8,11 @@ if (!$user) {
     $user->id = -1;
 }
 
+if ($user->id <= 0) {
+    header("HTTP/1.0 400 Bad Request");
+    exit(0);
+}
+
 $func = $_POST['action'];
 
 if ($func == "edittopic") {
@@ -53,6 +58,7 @@ if (($func == "init") || ($func == "rename") || ($func == "edittopic")) {
     $owner = db_select("users", $topic->user);
     $resp = array(
         "content" => "init",
+        "notifications" => ($user->notifications == 'Y'),
         "topic" => $topic->id,
         "data" => array(
             "locked" => $topic->locked == 'Y',
@@ -79,8 +85,7 @@ if ($func == "load") {
     $resp = array(
         "content" => "load",
         "topic" => $topic->id,
-//        "title" => $topic->title,
-//        "text" => $topic->message,
+        "notifications" => ($user->notifications == 'Y'),
         "data" => array()
     );
 
@@ -92,34 +97,8 @@ if ($func == "load") {
     $q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic->id));
    
     while ($message = db_next($q)) {
-
-        $actionq = db_query("SELECT * FROM actions WHERE message=:message ORDER BY id DESC", array("message" => $message->id));
-        $action = db_next($actionq);
-        if ($action->action == "D") {
-            continue;
-        }
-        $owner = db_select("users", $message->user);
-        $text = $action->body;
-        $strap = "Posted " . date("d M Y, H:i", $action->ts) . "";
-        if ($action->action == 'E') {
-            $strap = "Edited " . date("d M Y, H:i", $action->ts) . "";
-        }
-        $msg = array(
-            "user" => $owner->name,
-            "ts" => $message->ts,
-            "action" => 'P',
-            "aid" => $action->id,
-            "text" => $text,
-            "strap" => $strap,
-            "avatar" => md5(strtolower(trim($owner->email))),
-            "color" => $owner->color,
-            "side" => $owner->side,
-            "id" => $message->id,
-            "date" => date("d M Y", $message->ts),
-            "time" => date("H:i", $message->ts),
-            "own" => ($owner->id == $user->id),
-            "uid" => $user->id
-        );
+        $msg = getMessageData($message->id);
+//        if ($msg['action'] == 'E') $msg['action'] = 'P';
         $resp['data'][] = $msg;
     }
 
@@ -128,8 +107,19 @@ if ($func == "load") {
     exit(0);
 }
 
+
+
+
+
+$resp = array(
+    "notifications" => ($user->notifications == 'Y'),
+    "content" => "update",
+    "topic" => $topic->id,
+    "data" => array()
+);
+
 if ($func == "edit") {
-    if ($user->id == -1) {
+    if ($user->id <= 0) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
@@ -155,7 +145,7 @@ if ($func == "edit") {
 }
 
 if ($func == "delete") {
-    if ($user->id == -1) {
+    if ($user->id <= 0) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
@@ -180,7 +170,7 @@ if ($func == "delete") {
 }
 
 if ($func == "post") {
-    if ($user->id == -1) {
+    if ($user->id <= 0) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
@@ -209,6 +199,55 @@ if ($func == "post") {
     }
 }
 
+if ($func == "upvote") {
+    if ($user->id <= 0) {
+        header("HTTP/1.0 400 Bad Request");
+        exit(0);
+    }
+    $q = db_query("SELECT * FROM likes WHERE message=:msg AND user=:usr", array("msg"=>$_POST['message'], "usr"=>$user->id));
+    if ($r = db_next($q)) {
+        $v = min(1, $r->value + 1);
+        db_update("likes", $r->id, array(
+            "value" => $v,
+            "ts" => time()
+        ));
+    } else {
+        db_insert("likes", array(
+            "user" => $user->id,
+            "value" => 1,
+            "message" => $_POST['message'],
+            "ts" => time()
+        ));
+    }
+    $msg = getMessageData($_POST['message']);
+    if ($msg['action'] == 'P') $msg['action'] = 'E';
+    $resp['data'][] = $msg;
+}
+
+if ($func == "downvote") {
+    if ($user->id <= 0) {
+        header("HTTP/1.0 400 Bad Request");
+        exit(0);
+    }
+    $q = db_query("SELECT * FROM likes WHERE message=:msg AND user=:usr", array("msg"=>$_POST['message'], "usr"=>$user->id));
+    if ($r = db_next($q)) {
+        $v = max(-1, $r->value - 1);
+        db_update("likes", $r->id, array(
+            "value" => $v,
+            "ts" => time()
+        ));
+    } else {
+        db_insert("likes", array(
+            "user" => $user->id,
+            "value" => 1,
+            "message" => $_POST['message'],
+            "ts" => time()
+        ));
+    }
+    $msg = getMessageData($_POST['message']);
+    if ($msg['action'] == 'P') $msg['action'] = 'E';
+    $resp['data'][] = $msg;
+}
 
 $topic = db_select("topics", $_POST['topic']);
 
@@ -217,48 +256,24 @@ if (!$topic) {
     exit(0);
 } 
 
-$resp = array(
-    "content" => "update",
-    "topic" => $topic->id,
-    "data" => array()
-);
-
 
 
 $q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic->id));
 
-$maxid = 0;
 while ($message = db_next($q)) {
 
     $owner = db_select("users", $message->user);
-    $actionq = db_query("SELECT * FROM actions WHERE message=:message AND id > :id ORDER BY id", array("message" => $message->id, "id" => $_POST['lastid']));
+    $actionq = db_query("SELECT * FROM actions WHERE message=:message AND id>:id ORDER BY id DESC", array("message" => $message->id, "id" => $_POST['lastid']));
 
-    while ($action = db_next($actionq)) {
-        $text = $action->body;
-        $strap = "Posted " . date("d M Y, H:i", $action->ts) . "";
-        if ($action->action == 'E') {
-            $strap = "Edited " . date("d M Y, H:i") . "";
-        }
-        $msg = array(
-            "user" => $owner->name,
-            "ts" => $message->ts,
-            "action" => $action->action,
-            "aid" => $action->id,
-            "text" => $text,
-            "strap" => $strap,
-            "avatar" => md5(strtolower(trim($owner->email))),
-            "color" => $owner->color,
-            "side" => $owner->side,
-            "id" => $message->id,   
-            "date" => date("d M Y", $message->ts),
-            "time" => date("H:i", $message->ts),
-            "own" => ($owner->id == $user->id),
-        );
+    if ($action = db_next($actionq)) {
+        $msg = getMessageData($message->id);
         $resp['data'][] = $msg;
-        $maxid = max($maxid, $action->id);
     }
 }
-$resp['maxid'] = $maxid;
+
+$q = db_query("SELECT max(id) AS mid FROM actions");
+$r = db_next($q);
+$resp['maxid'] = $r->mid;
 
 if (count($resp['data']) == 0) {
     header("HTTP/1.1 204 No Content");

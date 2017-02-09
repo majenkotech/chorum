@@ -13,4 +13,5 @@ if (!$topic) {
 }
 
 db_update("topics", $topic->id, array("locked" => "N"));
+audit("Unlock topic " . $topic->id);
 header("Location: topic.php?topic=$topic->id");
