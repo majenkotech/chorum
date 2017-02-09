@@ -728,3 +728,15 @@ function closeCookiePopup(name,value,days) {
     expires = date.toUTCString();
     document.cookie = "CookiePopup=1; expires=" + expires + "; path=/";
 }
+
+function displayCookies(div) {
+    var el = $(div);
+
+    var theCookies = document.cookie.split(';');
+    var aString = '';
+    for (var i = 0 ; i < theCookies.length; i++) {
+        aString += theCookies[i].trim() + "\n";
+    }
+
+    el.innerHTML = aString;
+}

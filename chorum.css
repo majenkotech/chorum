@@ -30,6 +30,7 @@ body {
   -webkit-border-radius:10px;
   -moz-border-radius:10px;
   border-radius:10px;
+  box-shadow: 2px 2px 4px #666666;
 }
 
 /* Variant : for left positioned triangle
@@ -296,7 +297,7 @@ h1 {
 
 h2 {
     margin: 0px;
-    padding: 0px;
+    padding: 20px 0px 0px 50px;
 }
 
 .footer {
@@ -322,7 +323,7 @@ h2 {
     border-width: 3px;
     border-radius: 20px;
     padding: 10px;
-    background-color: #eeeeee;
+    background-color: #ffffff;
 }
 
 .questionbox img {
@@ -372,7 +373,7 @@ div.login {
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
-    background-color: #eeeeee;
+    background-color: #ffffff;
     padding: 20px;
     text-align: center;
 }
@@ -412,7 +413,7 @@ div.newpost {
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
-    background-color: #eeeeee;
+    background-color: #ffffff;
     padding: 20px;
     text-align: center;
 } 
@@ -527,14 +528,24 @@ div.forum h1 {
     bottom: 0px;
     background-color: #550000;
     color: #eeeeee;
+    box-shadow: 0px 0px 20px #000000;
+    background-image: url("assets/cookie.png");
+    background-repeat: no-repeat;
 }
 
 .cookiePopup p {
     margin: 0px;
+    padding: 3px;
 }
 
 .cookiePopup a {
-    color: #90b942;
+    color: #f0b845;
     font-weight: bold;
 
+}
+
+.cookieList {
+    white-space: pre;
+    padding-left: 10px;
+    font-family: Monospace;
 }

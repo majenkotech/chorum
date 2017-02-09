@@ -449,6 +449,7 @@ function cookiePopup() {
 <div class='cookiePopup' id='cookiePopup'>
 <p>This site uses cookies to maintain your current login session and improve your browsing experience. By continuing to use this site you agree to the placing of these
 cookies on your computer or device.</p>
+<a href='showcookies.php'>About cookies</a> |
 <a href='#' onClick='closeCookiePopup();'>Close this popup</a>
 </div>
 <?php
