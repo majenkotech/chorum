@@ -2,3 +2,11 @@
     Order Allow,Deny
     Deny from all
 </Files>
+
+RewriteEngine On
+RewriteBase /
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+php_value session.gc_maxlifetime 8640000
+

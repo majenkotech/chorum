@@ -1,3 +1,29 @@
+function mimeIsPicture(m) {
+    if (m == "image-png") return true;
+    if (m == "image-jpeg") return true;
+    if (m == "image-gif") return true;
+    return false;
+}
+
+function insertAtCursor(myField, myValue) {
+    //IE support
+    if (document.selection) {
+        myField.focus();
+        sel = document.selection.createRange();
+        sel.text = myValue;
+    }
+    //MOZILLA and others
+    else if (myField.selectionStart || myField.selectionStart == '0') {
+        var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
+        myField.value = myField.value.substring(0, startPos)
+            + myValue
+            + myField.value.substring(endPos, myField.value.length);
+    } else {
+        myField.value += myValue;
+    }
+}
+
 var Jif = Class.create({
     initialize: function(path,config)
     {
@@ -86,6 +112,7 @@ var Message = Class.create({
         this.container = container;
 
         this.updateLinks(this.messageText);
+        return this.messageWrapper;
 
     },
 
@@ -150,6 +177,30 @@ var Message = Class.create({
         this.messageText.innerHTML = this.converter.makeHtml(this.data.text);
         emojify.run(this.messageText);
 
+        this.messageAttachments = document.createElement("div");
+        this.messageAttachments.addClassName("messageAttachments");
+        var ul = document.createElement("ul");
+        this.messageAttachments.appendChild(ul);
+        for (var i = 0; i < this.data.attachments.length; i++) {
+            var att = this.data.attachments[i];
+
+            var li = document.createElement("li");
+            var img = document.createElement("img");
+            img.setAttribute("src", "assets/mime/" + att.mime.replace("/", "-") + ".png");
+            li.appendChild(img);
+
+            var a = document.createElement("a");
+            a.innerHTML = att.filename;
+            a.setAttribute("href", "att.php?id=" + att.id);
+            li.appendChild(a);
+
+            var span = document.createElement("span");
+            span.innerHTML = " (" + att.len + " bytes)";
+            li.appendChild(span);
+
+            ul.appendChild(li);
+        }
+
         this.messageStrap = document.createElement("div");
         this.messageStrap.addClassName("messageStrap");
         this.messageStrap.innerHTML = this.data.strap;
@@ -212,6 +263,7 @@ var Message = Class.create({
         }
 
         this.messageBox.appendChild(this.messageText);
+        this.messageBox.appendChild(this.messageAttachments);
         this.messageBox.appendChild(this.messageStrap);
         this.tagImages(this.messageText);
     },
@@ -268,6 +320,21 @@ var Message = Class.create({
                 this.tagImages(ob.children[i]);
             }
         }
+    },
+
+    isInView: function() {
+        var pageTop = window.pageYOffset || document.documentElement.scrollTop;
+        var pageBottom = pageTop + window.innerHeight;
+        var elementTop = this.messageWrapper.offsetTop;
+        var elementBottom = elementTop + this.messageWrapper.getHeight();
+
+//        console.log("Page Top: " + pageTop + ", Page Bottom: " + pageBottom + ", Element Top: " + elementTop + ", Element Bottom: " + elementBottom);
+
+//        if (fullyInView === true) {
+//            return ((pageTop < elementTop) && (pageBottom > elementBottom));
+//        } else {
+            return ((elementTop <= pageBottom) && (elementBottom >= pageTop));
+//        }
     }
 });
 
@@ -293,9 +360,11 @@ var Chorum = Class.create({
         this.isLive = true;
         this.newCount = 0;
         this.baseTitle = document.title;
+        this.messages = new Array();
 
         window.onfocus = this.setIsLive.bind(this);
         window.onblur = this.clrIsLive.bind(this);
+        window.onscroll = this.checkInView.bind(this);
 
         this.notifications = true;
 
@@ -312,6 +381,16 @@ var Chorum = Class.create({
             onSuccess: this.init.bind(this)
         });
 
+    },
+
+    checkInView: function(e) {
+        if (!this.messages) return;
+        this.messages.each(function(v) {
+            if (v.isInView() && Number(v.data.id) > this.seenid) {
+console.log(v.data.id + " came into view");
+                this.seenid = Number(v.data.id);
+            }
+        }.bind(this));
     },
 
     setIsLive: function(e) {
@@ -394,11 +473,56 @@ var Chorum = Class.create({
             this.postForm.setAttribute("method", "POST");
 
             this.postBox.appendChild(this.postForm);
+            this.postTable = document.createElement("table");
+            this.postTable.addClassName("messagePostTable");
+            this.postRow = document.createElement("tr");
+            this.postRow.addClassName("messagePostRow");
+            this.postEntryCell = document.createElement("td");
+            this.postEntryCell.addClassName("messagePostCell");
+            this.attBoxCell = document.createElement("td");
+            this.attBoxCell.addClassName("messageAttachmentCell");
+
+            this.postTable.appendChild(this.postRow);
+            this.postRow.appendChild(this.postEntryCell);
+            this.postRow.appendChild(this.attBoxCell);
+
+
 
             this.postEntry = document.createElement("textarea");
             this.postEntry.addClassName("messagePostEntry");
-            this.postForm.appendChild(this.postEntry);
-            this.postForm.appendChild(document.createElement("br"));
+            this.postEntry.setAttribute("placeholder", "Enter your message here.");
+
+            this.postEntryCell.appendChild(this.postEntry);
+
+            this.attBox = document.createElement("div");
+            this.attBox.addClassName("attachmentBox");
+
+            this.attBox.header = document.createElement("div");
+            this.attBox.header.addClassName("messageAttachmentHeader");
+            this.attBox.header.innerHTML = "Pending Attachments";
+            this.attBox.appendChild(this.attBox.header);
+
+
+            this.attBox.list = document.createElement("div");
+            this.attBox.list.addClassName("messageAttachmentList");
+            this.attBox.appendChild(this.attBox.list);
+
+            this.attBox.icons = document.createElement("div");
+            this.attBox.icons.addClassName("messageAttachmentIcons");
+            this.attBox.appendChild(this.attBox.icons);
+
+            this.attBoxCell.appendChild(this.attBox);
+
+            this.attBox.icons.upload = document.createElement("img");
+            this.attBox.icons.upload.setAttribute("title", "Upload File");
+            this.attBox.icons.upload.setAttribute("src", "assets/upload.png");
+            this.attBox.icons.appendChild(this.attBox.icons.upload);
+
+            this.attBox.icons.upload.observe("click", this.openUploadWindow.bind(this));
+
+            
+            this.postForm.appendChild(this.postTable);
+//            this.postForm.appendChild(document.createElement("br"));
 
             this.postButton = document.createElement("input");
             this.postButton.setAttribute("type", "submit");
@@ -412,6 +536,16 @@ var Chorum = Class.create({
             this.postForm.appendChild(this.postHint);
 
             this.postForm.observe("submit", this.postMessage.bind(this));
+
+            new Jif("chorum.php", {
+                method: "post",
+                parameters: {
+                    action: "pending",
+                    topic: this.topic
+                },
+                onSuccess: this.pending.bind(this)
+            });
+
         }
 
         new Jif("chorum.php", {
@@ -425,11 +559,156 @@ var Chorum = Class.create({
 
     },
 
+    openUploadWindow: function(e) {
+try {
+        this.uploadWindow = document.createElement("div");
+        this.uploadWindow.addClassName("uploadWindow");
+
+        this.attBox.list.innerHTML="";
+        this.attBox.list.appendChild(this.uploadWindow);
+
+        this.uploadWindow.appendChild(document.createElement("br"));
+        this.uploadWindow.appendChild(document.createElement("br"));
+        this.uploadWindow.frm = document.createElement("form");
+        this.uploadWindow.uf = document.createElement("input");
+        this.uploadWindow.uf.setAttribute("type", "file");
+        this.uploadWindow.uf.setAttribute("name", "file");
+        this.uploadWindow.frm.appendChild(this.uploadWindow.uf);
+        this.uploadWindow.appendChild(this.uploadWindow.frm);
+
+        var h = document.createElement("input");
+        h.setAttribute("name", "action");
+        h.setAttribute("value", "upload");
+        h.setAttribute("type", "hidden");
+        this.uploadWindow.frm.appendChild(h);
+
+        this.uploadWindow.appendChild(document.createElement("br"));
+        this.uploadWindow.appendChild(document.createElement("br"));
+
+        var can = document.createElement("button");
+        can.innerHTML = "Cancel";
+        can.observe("click", this.cancelUpload.bind(this));
+        this.uploadWindow.appendChild(can);
+
+        var upl = document.createElement("button");
+        upl.innerHTML = "Upload";
+        upl.observe("click", this.doUpload.bind(this));
+        this.uploadWindow.appendChild(upl);
+
+
+} catch (E) { alert(E); }
+    },
+
+    doUpload: function(e) {
+
+        var f = new FormData(this.uploadWindow.frm);
+
+          var oReq = new XMLHttpRequest();
+  oReq.open("POST", "chorum.php", true);
+  oReq.onload = this.cancelUpload.bind(this);
+  oReq.send(f);
+
+
+//        new Ajax.Request("chorum.php", {
+//            contentType: null,
+//            method: "POST",
+//            postBody: new FormData(this.uploadWindow.frm),
+//            onSuccess: this.cancelUpload.bind(this)
+//        });
+    },
+
+    cancelUpload: function(e) {
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "pending",
+                topic: this.topic
+            },
+            onSuccess: this.pending.bind(this)
+        });
+    },
+
+    pending: function(r) {
+        this.attBox.list.innerHTML="";
+        this.attBox.list.ul = document.createElement("ul");
+        this.attBox.list.ul.addClassName("attachmentList");
+        this.attBox.list.appendChild(this.attBox.list.ul);
+        var attBox = this.attBox;
+        var me = this;
+        r.responseJSON.each(function(v, i) {
+            var li = document.createElement("li");
+            li.addClassName("attachmentFile");
+
+            var tbl = document.createElement("table");
+            var row = document.createElement("tr");
+            var ib = document.createElement("td");
+            ib.addClassName("attachmentListFileIcon");
+            var fn = document.createElement("td");
+            fn.addClassName("attachmentListFilename");
+            var op = document.createElement("td");
+            op.addClassName("attachmentListOperationIcons");
+            tbl.appendChild(row);
+            row.appendChild(ib);
+            row.appendChild(fn);
+            row.appendChild(op);
+
+            var ic = document.createElement("img");
+            var m = v.mime;
+            m = m.replace("/","-");
+            ic.src="assets/mime/" + m + ".png";
+            ib.appendChild(ic);
+
+            if (mimeIsPicture(m)) {
+                var ins = document.createElement("img");
+                ins.setAttribute("src","assets/insert.png");
+                ins.setAttribute("title", "Insert inline");
+                ins.fileid=v.id;
+                ins.filename=v.filename;
+                op.appendChild(ins);
+                ins.observe("click", me.insertPicture.bind(me));
+            }
+
+            var lnk = document.createElement("img");
+            lnk.setAttribute("src","assets/link.png");
+            lnk.setAttribute("title", "Insert link");
+            lnk.filename=v.filename;
+            lnk.fileid=v.id;
+            op.appendChild(lnk);
+            lnk.observe("click", me.insertLink.bind(me));
+            
+
+            var del = document.createElement("img");
+            del.setAttribute("src","assets/delete.png");
+            del.setAttribute("title", "Delete");
+            del.fileid=v.id;
+            op.appendChild(del);
+
+            fn.innerHTML = v.filename;
+
+            li.appendChild(tbl);
+
+            attBox.list.ul.appendChild(li);
+        }).bind(this);
+
+    },
+
+    insertPicture: function(e) {
+        var el = e.srcElement;
+        insertAtCursor(this.postEntry, "![" + el.filename + "](att.php?id=" + el.fileid + ")");
+    },
+
+    insertLink: function(e) {
+        var el = e.srcElement;
+        insertAtCursor(this.postEntry, "[" + el.filename + "](att.php?id=" + el.fileid + ")");
+    },
+
     populate: function(r) {
         if (r.status == 204) {
             if (this.timerPeriod < 10000) this.timerPeriod *= 1.1;
             clearTimeout(this.updateTimer);
-            if (!this.topicdata.locked) {
+            if (this.topicdata.locked) {
+                this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod * 10);
+            } else {
                 this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
             }
             return;
@@ -439,6 +718,7 @@ var Chorum = Class.create({
         if (aid > this.lastid) {
             this.lastid = aid;
         }
+        this.seenid = Number(r.responseJSON.lastid);
         this.timerPeriod = 1000;
         var type = r.responseJSON.content;
         if (type == "noauth") {
@@ -447,7 +727,12 @@ var Chorum = Class.create({
             this.messageList.innerHTML = "";
             r.responseJSON.data.each(function(v, i) {
                 if (v.action != 'D') {
-                    this.addPost(v);
+                    box = this.addPost(v);
+                    if (parseInt(v.id) <= this.seenid) {
+                        if (this.seenid > 0) {
+                            box.scrollIntoView(true);
+                        }
+                    }
                 }
             }.bind(this));
         } else if (type == "update") {
@@ -478,7 +763,9 @@ var Chorum = Class.create({
         }
 
         clearTimeout(this.updateTimer);
-        if (!this.topicdata.locked) {
+        if (this.topicdata.locked) {
+            this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod * 10);
+        } else {
             this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
         }
     },
@@ -489,7 +776,8 @@ var Chorum = Class.create({
             parameters: {
                 action: "update",
                 topic: this.topic,
-                lastid: this.lastid
+                lastid: this.lastid,
+                seenid: this.seenid
             },
             onSuccess: this.populate.bind(this)
         });
@@ -498,7 +786,7 @@ var Chorum = Class.create({
     addPost: function(post) {
         var msg = new Message(this, post);
         this.messages[parseInt(post.id)] = msg;
-        msg.render(this.messageList);
+        return msg.render(this.messageList);
     },
 
     saveEdit: function(msg) {
@@ -508,6 +796,7 @@ var Chorum = Class.create({
                 action: "edit",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: msg.data.id,
                 body: msg.editBox.getValue()
             },
@@ -523,6 +812,7 @@ var Chorum = Class.create({
                 action: "delete",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: post.data.id
             },
             onSuccess: this.populate.bind(this)
@@ -556,11 +846,24 @@ var Chorum = Class.create({
                 action: "post",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: this.postEntry.getValue()
             },
-            onSuccess: this.populate.bind(this)
+            onSuccess: this.repopulate.bind(this)
         });
         this.postEntry.setValue("");
+    },
+
+    repopulate: function(e) {
+        this.populate(e);
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "pending",
+                topic: this.topic
+            },
+            onSuccess: this.pending.bind(this)
+        });
     },
 
     quoteMessage: function(e) {
@@ -607,6 +910,7 @@ var Chorum = Class.create({
                 action: "rename",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 title: this.titleEditBox.getValue()
             },
             onSuccess: this.init.bind(this)
@@ -653,6 +957,7 @@ var Chorum = Class.create({
                 action: "edittopic",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: this.editBox.getValue()
             },
             onSuccess: this.init.bind(this)
@@ -697,6 +1002,7 @@ var Chorum = Class.create({
                 action: "upvote",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: id
             },
             onSuccess: this.populate.bind(this)
@@ -709,6 +1015,7 @@ var Chorum = Class.create({
                 action: "downvote",
                 topic: this.topic,
                 lastid: this.lastid,
+                seenid: this.seenid,
                 message: id
             },
             onSuccess: this.populate.bind(this)
@@ -716,8 +1023,10 @@ var Chorum = Class.create({
     }
 });
 
+var chorum;
+
 function startChorum(id, topic) {
-    new Chorum(id, topic);
+    chorum = new Chorum(id, topic);
 }
 
 function closeCookiePopup(name,value,days) {

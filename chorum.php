@@ -15,6 +15,32 @@ if ($user->id <= 0) {
 
 $func = $_POST['action'];
 
+$topic = false;
+if (array_key_exists("topic", $_POST)) $topic = getTopic($_POST['topic']);
+
+if ($func == "upload") {
+    db_query("insert into attachments set owner=:owner, filename=:filename, mime=:mime, uploaded=:uploaded, message=-1, data=:data", array(
+        "owner" => $user->id,
+        "filename" => $_FILES['file']['name'],
+        "mime" => $_FILES['file']['type'],
+        "uploaded" => time(),
+        "data" => file_get_contents($_FILES['file']['tmp_name'])
+    ));
+    print "Ok";
+    exit(0);
+}
+
+if ($func == "pending") {
+    $files = db_query("select id, filename, mime from attachments where message=-1 and owner=:owner order by id", array("owner" => $user->id));
+    $out = array();
+    while ($r = db_next($files)) {
+        $out[] = $r;
+    }
+    header("Content-type: application/json");
+    print json_encode($out);
+    exit(0);
+}
+
 if ($func == "edittopic") {
     $topic = db_select("topics", $_POST['topic']);
     if (!$topic) {
@@ -50,7 +76,7 @@ if ($func == "rename") {
 }
 
 if (($func == "init") || ($func == "rename") || ($func == "edittopic")) {
-    $topic = db_select("topics", $_POST['topic']);
+    $topic = getTopic($_POST['topic']);
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
@@ -74,8 +100,7 @@ if (($func == "init") || ($func == "rename") || ($func == "edittopic")) {
 }
 
 if ($func == "load") {
-    $q = db_query("SELECT * FROM topics WHERE id=:id", array("id" => $_POST['topic']));
-    $topic = db_next($q);
+    $topic = getTopic($_POST['topic']);
 
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");
@@ -86,20 +111,15 @@ if ($func == "load") {
         "content" => "load",
         "topic" => $topic->id,
         "notifications" => ($user->notifications == 'Y'),
-        "data" => array()
     );
 
-    $q = db_query("SELECT max(id) AS mid FROM actions");
-    $r = db_next($q);
-    $resp['maxid'] = $r->mid;
-     
+    $resp['data'] = getActionsSince($topic->id, 0);
+    $resp['maxid'] = getMaxIDForTopic($topic->id);
+    $resp['lastid'] = getLastViewedID($topic->id);
 
-    $q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic->id));
-   
-    while ($message = db_next($q)) {
-        $msg = getMessageData($message->id);
-//        if ($msg['action'] == 'E') $msg['action'] = 'P';
-        $resp['data'][] = $msg;
+    if (count($resp['data']) == 0) {
+        header("HTTP/1.1 204 No Content");
+        exit(0);
     }
 
     header("Content-type: application/json");
@@ -123,7 +143,7 @@ if ($func == "edit") {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
-    $topic = db_select("topics", $_POST['topic']);
+    $topic = getTopic($_POST['topic']);
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
@@ -149,7 +169,7 @@ if ($func == "delete") {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
-    $topic = db_select("topics", $_POST['topic']);
+    $topic = getTopic($_POST['topic']);
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
@@ -174,7 +194,7 @@ if ($func == "post") {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
-    $topic = db_select("topics", $_POST['topic']);
+    $topic = getTopic($_POST['topic']);
     if (!$topic) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
@@ -194,6 +214,10 @@ if ($func == "post") {
                 "action" => "P",
                 "ts" => time(),
                 "body" => $text
+            ));
+            db_query("update attachments set message=:mid where owner=:owner and message=-1", array(
+                "mid" => $mid,
+                "owner" => $user->id
             ));
         }
     }
@@ -249,36 +273,23 @@ if ($func == "downvote") {
     $resp['data'][] = $msg;
 }
 
-$topic = db_select("topics", $_POST['topic']);
+$topic = getTopic($_POST['topic']);
 
 if (!$topic) {
     header("HTTP/1.0 400 Bad Request");
     exit(0);
 } 
 
-
-
-$q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic->id));
-
-while ($message = db_next($q)) {
-
-    $owner = db_select("users", $message->user);
-    $actionq = db_query("SELECT * FROM actions WHERE message=:message AND id>:id ORDER BY id DESC", array("message" => $message->id, "id" => $_POST['lastid']));
-
-    if ($action = db_next($actionq)) {
-        $msg = getMessageData($message->id);
-        $resp['data'][] = $msg;
-    }
-}
-
-$q = db_query("SELECT max(id) AS mid FROM actions");
-$r = db_next($q);
-$resp['maxid'] = $r->mid;
+$resp['data'] = getActionsSince($topic->id, $_POST['lastid']);
+$resp['maxid'] = getMaxIDForTopic($topic->id);
+$resp['lastid'] = getLastViewedID($topic->id);
+updateLastViewedID($topic->id, $_POST['seenid']);
 
 if (count($resp['data']) == 0) {
     header("HTTP/1.1 204 No Content");
     exit(0);
 }
+
 
 header("Content-type: application/json");
 print json_encode($resp);

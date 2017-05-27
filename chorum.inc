@@ -22,9 +22,8 @@ if (array_key_exists("ChorumAuthKey", $_COOKIE)) {
     }
 }
 
-
-$user = db_select("users", $_SESSION['uid']);
-
+$user = false;
+if (array_key_exists("uid", $_SESSION)) $user = getUser($_SESSION['uid']);
 
 function db_query($query,$params = array())
 {
@@ -55,6 +54,12 @@ function db_select($table,$record)
     $q = db_query($query,array("id" => $record));
     $r = db_next($q);
     return $r;
+}
+
+function db_delete($table,$record)
+{
+    $query = sprintf("DELETE FROM `%s` WHERE id=:id",$table);
+    $q = db_query($query,array("id" => $record));
 }
 
 function db_insert($table,$data)
@@ -95,12 +100,13 @@ function db_update($table,$id,$data)
 
 
 function populateStaticMessages($id) {
+    global $user;
+    if ($user) return;
 
-    if ($_SESSION['uid'] > 0) {
-        return;
-    }
-    $topic = db_select("topics", $id);
-    $owner = db_select("users", $topic->user);
+    $topic = getTopic($id);
+    if (!topic) return;
+
+    $owner = getUser($topic->user);
     $pd = new Parsedown();
 ?>
     <h1 class='questiontitle'><?php print htmlspecialchars($topic->title); ?></h1>
@@ -108,48 +114,38 @@ function populateStaticMessages($id) {
     <div class='questionbox'><?php print $pd->text($topic->message); ?></div>
     <div class='signup'><a href='signup.php'>Sign up</a> or <a href='signin.php'>log in</a> for live updates and to post messages.</div>
 <?php
-    $q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic->id));
 
-    while ($message = db_next($q)) {
+    $actions = getActionsSince($topic->id, 0);
 
-        $actionq = db_query("SELECT * FROM actions WHERE message=:message ORDER BY id DESC", array("message" => $message->id));
-        $action = db_next($actionq);
-        if ($action->action == "D") {
-            continue;
-        }
-        $owner = db_select("users", $message->user);
-
-        $vq = db_query("SELECT SUM(value) AS rating FROM likes WHERE message=:id", array("id" => $message->id));
-        $vr = db_next($vq);
-        $votes = $vr->rating - 0;
-
-        $text = $pd->text($action->body);
-        $strap = "Posted " . date("d M Y, H:i", $action->ts) . ", " . $votes . " votes";
-        if ($action->action == 'E') {
-            $strap = "Edited " . date("d M Y, H:i", $action->ts) . ", " . $votes . " votes";
-        }
-        if ($owner->side == "left") {
+    foreach ($actions as $action) {
+        if ($action['action'] == 'D') continue;
+        if ($action['side'] == "left") {
 ?>
 <div class='message mb-left'>
     <div class='messageMeta-left'>
-        <img src='https://www.gravatar.com/avatar/<?php print md5(strtolower(trim($owner->email))); ?>.png?s=80'/>
-        <div class='messageMetaUser'><?php print $owner->name; ?></div>
+        <img src='https://www.gravatar.com/avatar/<?php print $action['avatar']; ?>.png?s=80'/>
+        <div class='messageMetaUser'><?php print $action['user']; ?></div>
+        <div class='messageMetaVotes'>Rating: <?php print $action['userrating']; ?></div>
     </div>
-    <div class='messageBody triangle-right left <?php print $owner->color; ?>'>
-        <div class='messageText'><?php print $text; ?></div>
-        <div class='messageStrap'><?php print $strap; ?></div>
+    <div class='messageBody triangle-right left <?php print $action['color']; ?>'>
+        <div class='messageText'><?php print $pd->text($action['text']); ?></div>
+        <div class='messageAttachments'><ul><?php foreach ($action['attachments'] as $att) { ?>
+<li><img src='assets/mime/<?php print str_replace("/", "-", $att->mime); ?>.png'/><a href='att.php?id=<?php print $att->id; ?>'><?php print $att->filename; ?></a> (<?php print $att->len; ?> bytes)</li>
+        <?php } ?></table></div>
+        <div class='messageStrap'><?php print $action['strap']; ?></div>
     </div>
 </div>
 <br clear='all' />
 <?php } else { ?>
 <div class='message mb-right'>
-    <div class='messageBody triangle-right right <?php print $owner->color; ?>'>
-        <div class='messageText'><?php print $text; ?></div>
-        <div class='messageStrap'><?php print $strap; ?></div>
+    <div class='messageBody triangle-right right <?php print $action['color']; ?>'>
+        <div class='messageText'><?php print $pd->text($action['text']); ?></div>
+        <div class='messageStrap'><?php print $action['strap']; ?></div>
     </div>
     <div class='messageMeta-right'>
-        <img src='https://www.gravatar.com/avatar/<?php print md5(strtolower(trim($owner->email))); ?>.png?s=80'/>
-        <div class='messageMetaUser'><?php print $owner->name; ?></div>
+        <img src='https://www.gravatar.com/avatar/<?php print $action['avatar']; ?>.png?s=80'/>
+        <div class='messageMetaUser'><?php print $action['user']; ?></div>
+        <div class='messageMetaVotes'>Rating: <?php print $action['userrating']; ?></div>
     </div>
 </div>
 <br clear='all' />
@@ -159,8 +155,12 @@ function populateStaticMessages($id) {
 }
 
 function menu() {
+    global $user;
 ?>
 <ul class='menu'>
+<?php if (isAdmin($user->id)) { ?>
+<li><a href='manage.php'>Manage Forums</a></li>
+<?php } ?>
 <li><a href='index.php'>Forum List</a></li>
 <?php
     if ($_SESSION['uid'] > 0) {
@@ -358,8 +358,20 @@ function topicTools($tid) {
 <a href='lockTopic.php?topic=<?php print $tid; ?>'>Lock topic</a></li>
 <?php   } else { ?>
 <li><img src='assets/locked.png'/>
-<a href='unlockTopic.php?topic=<?php print $tid; ?>'>Unock topic</a></li>
+<a href='unlockTopic.php?topic=<?php print $tid; ?>'>Unlock topic</a></li>
 <?php   }
+
+        if ($topic->sticky == 'N') {
+?>
+<li><img src='assets/sticky.png'/>
+<a href='stickTopic.php?topic=<?php print $tid; ?>'>Stick topic</a></li>
+<?php   } else { ?>
+<li><img src='assets/sticky.png'/>
+<a href='unstickTopic.php?topic=<?php print $tid; ?>'>Unstick topic</a></li>
+<?php   }
+
+
+
     }
 ?>
 </div>
@@ -414,9 +426,15 @@ function getMessageData($msgid) {
         $voted = 0;
     }
 
-    $strap = "Posted " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+    $strap = $message->id . " Posted " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
     if ($action->action == 'E') {
-        $strap = "Edited " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+        $strap = $message->id . " Edited " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+    }
+
+    $atts = db_query("SELECT id, filename, length(data) as len, mime from attachments where message=:mid", array("mid" => $message->id));
+    $attlist = array();
+    while ($att = db_next($atts)) {
+        $attlist[] = $att;
     }
 
     $msg = array(
@@ -433,10 +451,11 @@ function getMessageData($msgid) {
         "date" => date("d M Y", $message->ts),
         "time" => date("H:i", $message->ts),
         "own" => ($owner->id == $user->id),
-        "uid" => $user->id,
+        "uid" => $owner->id,
         "rating" => $rating,
         "userrating" => $userrating,
-        "voted" => $voted
+        "voted" => $voted,
+        "attachments" => $attlist
     );
     return $msg;
 }
@@ -453,4 +472,68 @@ cookies on your computer or device.</p>
 <a href='#' onClick='closeCookiePopup();'>Close this popup</a>
 </div>
 <?php
+}
+
+function getLastViewedID($topic) {
+    global $user;
+    if (!$user) {
+        return 0;
+    }
+    $q = db_query("SELECT maxid FROM user_views WHERE topic=:topic AND user=:uid", array("topic" => $topic, "uid" => $user->id));
+    if ($r = db_next($q)) {
+        return $r->maxid;
+    }
+    return 0;
+}
+
+function getMaxIDForTopic($topic) {
+    $q = db_query("SELECT max(actions.id) AS mid FROM actions,messages where messages.topic=:topic and actions.message=messages.id", array("topic" => $topic));
+    if ($r = db_next($q)) {
+        return $r->mid;
+    }
+    return 0;
+}
+
+function updateLastViewedID($topic, $maxid) {
+    global $user;
+    if (!$user) return;
+
+    $q = db_query("SELECT * FROM user_views WHERE topic=:topic AND user=:uid", array("topic" => $topic, "uid" => $user->id));
+    if ($r = db_next($q)) {
+        db_update("user_views", $r->id, array("maxid" => $maxid));
+    } else {
+        db_insert("user_views", array(
+            "user" => $user->id,
+            "topic" => $topic,
+            "maxid" => $maxid
+        ));
+    }
+}
+
+function getActionsSince($topic, $lastid) {
+
+    $data = array();
+
+    $q = db_query("SELECT * FROM messages WHERE topic=:topic ORDER BY id", array("topic" => $topic));
+
+    while ($message = db_next($q)) {
+
+        $owner = db_select("users", $message->user);
+        $actionq = db_query("SELECT * FROM actions WHERE message=:message AND id>:id ORDER BY id DESC", array("message" => $message->id, "id" => $lastid));
+
+        if ($action = db_next($actionq)) {
+            $msg = getMessageData($message->id);
+            $data[] = $msg;
+        }
+    }
+    
+    return $data;
+}
+
+function getTopic($id) {
+    return db_select("topics", $id);
+}
+
+function getUser($id) {
+    return db_select("users", $id);
 }
