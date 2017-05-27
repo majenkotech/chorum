@@ -212,7 +212,6 @@ CREATE TABLE `users` (
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`chorum`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `latest_actions` AS select `ac1`.`id` AS `id`,`ac1`.`message` AS `message`,`ac1`.`action` AS `action`,`ac1`.`body` AS `body`,`ac1`.`ts` AS `ts` from (`actions` `ac1` left join `actions` `ac2` on(((`ac1`.`message` = `ac2`.`message`) and (`ac1`.`id` < `ac2`.`id`)))) where isnull(`ac2`.`id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
