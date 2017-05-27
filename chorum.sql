@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.53, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.54, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: chorum
 -- ------------------------------------------------------
--- Server version	5.5.53-0+deb8u1
+-- Server version	5.5.54-0+deb8u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -30,7 +30,27 @@ CREATE TABLE `actions` (
   `ts` bigint(11) DEFAULT NULL,
   UNIQUE KEY `id` (`id`),
   KEY `idx_message_id` (`message`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=220 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=249 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attachments`
+--
+
+DROP TABLE IF EXISTS `attachments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `attachments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `message` bigint(11) DEFAULT NULL,
+  `owner` bigint(11) DEFAULT NULL,
+  `downloads` bigint(11) DEFAULT NULL,
+  `mime` varchar(255) DEFAULT NULL,
+  `filename` varchar(255) DEFAULT NULL,
+  `uploaded` bigint(11) DEFAULT NULL,
+  `data` longblob,
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +66,7 @@ CREATE TABLE `audit` (
   `log` varchar(255) DEFAULT NULL,
   `ts` bigint(11) DEFAULT NULL,
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -61,7 +81,7 @@ CREATE TABLE `forums` (
   `name` varchar(255) DEFAULT NULL,
   `locked` enum('N','Y') DEFAULT 'N',
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -114,7 +134,7 @@ CREATE TABLE `messages` (
   `ts` bigint(11) DEFAULT NULL,
   `flagged` bigint(11) DEFAULT NULL,
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=118 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -134,7 +154,7 @@ CREATE TABLE `topics` (
   `locked` enum('N','Y') DEFAULT 'N',
   `sticky` enum('Y','N') DEFAULT 'N',
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,7 +170,7 @@ CREATE TABLE `user_views` (
   `topic` bigint(11) DEFAULT NULL,
   `maxid` bigint(11) DEFAULT NULL,
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -174,6 +194,7 @@ CREATE TABLE `users` (
   `admin` enum('Y','N') DEFAULT 'N',
   `moderator` enum('Y','N') DEFAULT 'N',
   `notifications` enum('Y','N') DEFAULT 'Y',
+  `persist` varchar(255) DEFAULT NULL,
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -206,4 +227,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-09  0:25:38
+-- Dump completed on 2017-05-27 20:58:59
