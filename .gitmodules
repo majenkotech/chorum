@@ -1,3 +1,6 @@
 [submodule "PHPMailer"]
 	path = PHPMailer
 	url = git@github.com:PHPMailer/PHPMailer.git
+[submodule "parsedown"]
+    path = parsedown
+    url= git@github.com:erusev/parsedown.git
