@@ -3,4 +3,7 @@
 	url = git@github.com:PHPMailer/PHPMailer.git
 [submodule "parsedown"]
     path = parsedown
-    url= git@github.com:erusev/parsedown.git
+    url = git@github.com:erusev/parsedown.git
+[submodule "showdown"]
+    path = showdown
+    url = git@github.com:showdownjs/showdown.git
