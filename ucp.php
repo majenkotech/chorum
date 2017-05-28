@@ -63,7 +63,7 @@
 
 <head>
 <link rel='stylesheet' href='chorum.css'/>
-<title><?php print $siteName; ?> :: Log In</title>
+<title><?php print $siteName; ?> :: Control Panel</title>
 </head>
 
 <body>
