@@ -5,7 +5,7 @@
         array("What is three plus four?", "7", "seven"),
         array("What is nine minus four?", "5", "five"),
         array("What is half of twelve?", "6", "six"),
-        array("What is the square root of 391?", "19", "nineteen")
+        array("What is the square root of 16?", "4", "four")
     );
 
     if ($_POST['username'] != "") {
