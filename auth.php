@@ -5,7 +5,7 @@ require_once("chorum.inc");
 db_query("UPDATE users SET auth='Y' WHERE authkey=:key", array("key"=>$_GET['auth']));
 ?>
 <head>
-<link rel='stylesheet' href='chorum.css'/>
+<link rel='stylesheet' href='themes/<?php print $theme; ?>/theme.css'/>
 <title><?php print $siteName; ?> :: Validate Email</title>
 </head>
 

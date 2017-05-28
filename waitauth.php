@@ -3,7 +3,7 @@
 ?>
 
 <head>
-<link rel='stylesheet' href='chorum.css'/>
+<link rel='stylesheet' href='themes/<?php print $theme; ?>/theme.css'/>
 <title><?php print $siteName; ?> :: Authentication Required</title>
 </head>
 

@@ -7,7 +7,7 @@
 <script src="prototype.js"></script>
 <script src="showdown/dist/showdown.js"></script>
 <script src="chorum.js"></script>
-<link rel='stylesheet' href='chorum.css'/>
+<link rel='stylesheet' href='themes/<?php print $theme; ?>/theme.css'/>
 <title><?php print $siteName; ?> :: Topic List</title>
 </head>
 <body>

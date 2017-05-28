@@ -8,6 +8,8 @@ $dbHost = "localhost";
 $siteName = "Chorum";
 $siteRoot = "http://chorum.org";
 
+$theme = "chorum";
+
 $mailSender = "chorum@chorum.org";
 $mailName = "Chorum";
 $mailSMTPHost = "smtp.chorum.org";
