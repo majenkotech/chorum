@@ -157,6 +157,10 @@ function populateStaticMessages($id) {
 function menu() {
     global $user;
 ?>
+<div class="header">
+<div class="logo"></div>
+<div class="siteName"></div>
+<div class="siteStrap"></div>
 <ul class='menu'>
 <?php if (isAdmin($user->id)) { ?>
 <li><a href='manage.php'>Manage Forums</a></li>
@@ -177,6 +181,7 @@ function menu() {
     }
 ?>
 </ul>
+</div>
 <?php
 }
 
