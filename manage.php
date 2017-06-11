@@ -68,6 +68,12 @@
     </td>
 </tr>
 <tr>
+    <td>&nbsp;</td>
+    <td>
+        <input type='checkbox' name="hidden" <?php if ($forum->hidden == 'Y') { print "checked"; } ?>>Hidden (only administrators can see it)</input>
+    </td>
+</tr>
+<tr>
     <td colspan=2 align=right><input type='submit' value='Save'/></td>
 </tr>
 </table>
@@ -101,6 +107,12 @@
     <td>&nbsp;</td>
     <td>
         <input type='checkbox' name="locked">Locked</input>
+    </td>
+</tr>
+<tr>
+    <td>&nbsp;</td>
+    <td>
+        <input type='checkbox' name="hidden">Hidden (only administrators can see it)</input>
     </td>
 </tr>
 <tr>

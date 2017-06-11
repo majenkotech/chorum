@@ -15,6 +15,11 @@
 <?php
     $fq = db_query("SELECT * FROM forums ORDER BY id");
     while ($forum = db_next($fq)) {
+        if ($forum->hidden == "Y") {
+            if (!isAdmin($user->id)) {
+                continue;
+            }
+        }
 ?>
 <div class="forum">
     <h1>

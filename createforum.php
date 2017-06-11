@@ -8,7 +8,8 @@
     if (array_key_exists("name", $_POST)) {
         $id = db_insert("forums", array(
             "name" => $_POST['name'],
-            "locked" => ($_POST['locked'] == 'on') ? 'Y' : 'N'
+            "locked" => ($_POST['locked'] == 'on') ? 'Y' : 'N',
+            "hidden" => ($_POST['hidden'] == 'on') ? 'Y' : 'N'
         ));
         header("Location: manage.php?forum=" . $id);
         exit(0);

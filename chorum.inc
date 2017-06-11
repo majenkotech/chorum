@@ -324,6 +324,9 @@ function getAvailableForums() {
         if ($r->locked == 'Y' && !$isAdmin) {
             $allowed = false;
         }
+        if ($r->hidden == 'Y' && !$isAdmin) {
+            $allowed = false;
+        }
         if ($allowed) {
             $forums[$r->id] = $r;
         }
@@ -340,6 +343,7 @@ function canPostInForum($forum) {
     $forum = db_select("forums", $forum);
     if (!$forum) return false;
     if ($forum->locked == 'Y') return false;
+    if ($forum->hidden == 'Y') return false;
 
     return true;
 }
@@ -373,12 +377,21 @@ function topicTools($tid) {
 <?php   } else { ?>
 <li><img src='assets/sticky.png'/>
 <a href='unstickTopic.php?topic=<?php print $tid; ?>'>Unstick topic</a></li>
-<?php   }
+<?php   } ?>
 
-
-
-    }
+<li>Move topic to forum:<select id="destforum" name="destforum" onChange='document.location="movetopic.php?topic=<?php print $tid; ?>&dest=" + $("destforum").getValue();'>
+<option value="-1">Select forum...</option>
+<?php
+    $forums = getAvailableForums();
+    foreach ($forums as $forum) {
 ?>
+<option value="<?php print $forum->id; ?>"><?php print $forum->name; ?></option>
+<?php   } ?>
+</select>
+</li>
+
+<?php } ?>
+</ul>
 </div>
 <?php
 }
@@ -533,6 +546,10 @@ function getActionsSince($topic, $lastid) {
     }
     
     return $data;
+}
+
+function getForum($id) {
+    return db_select("forums", $id);
 }
 
 function getTopic($id) {
