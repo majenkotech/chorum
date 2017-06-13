@@ -530,6 +530,13 @@ console.log(v.data.id + " came into view");
             this.postButton.addClassName("messagePostButton");
             this.postForm.appendChild(this.postButton);
 
+            this.previewButton = document.createElement("input");
+            this.previewButton.setAttribute("type", "button");
+            this.previewButton.setAttribute("value", "Preview");
+            this.previewButton.addClassName("messagePostButton");
+            this.previewButton.observe("click", this.previewPost.bind(this));
+            this.postForm.appendChild(this.previewButton);
+
             this.postHint = document.createElement("div");
             this.postHint.addClassName("messagePostHint");
             this.postHint.innerHTML = "This forum system supports the Github flavour of Markdown. <a href='https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet' target='_blank'>Click here for instructions on using Markdown</a><br/>The full range of emoticons are supported. The complete list of codes can be found <a href='http://www.webpagefx.com/tools/emoji-cheat-sheet/' target='_blank'>here.</a>";
@@ -557,6 +564,30 @@ console.log(v.data.id + " came into view");
             onSuccess: this.populate.bind(this)
         });
 
+    },
+
+    previewPost: function(e) {
+        this.bodyLocker = document.createElement("div");
+        this.bodyLocker.addClassName("bodyLocker");
+        document.body.appendChild(this.bodyLocker);
+        this.previewPanel = document.createElement("div");
+        this.previewPanel.addClassName("previewPanel");
+        document.body.appendChild(this.previewPanel);
+        this.previewBody = document.createElement("div");
+        this.previewBody.addClassName("previewBody");
+        this.previewBody.innerHTML = this.converter.makeHtml(this.postEntry.getValue());
+        document.body.appendChild(this.previewBody);
+
+        this.previewBody.observe("click", this.closePreview.bind(this));
+        this.previewPanel.observe("click", this.closePreview.bind(this));
+        this.bodyLocker.observe("click", this.closePreview.bind(this));
+
+    },
+
+    closePreview: function(e) {
+        document.body.removeChild(this.previewBody);
+        document.body.removeChild(this.previewPanel);
+        document.body.removeChild(this.bodyLocker);
     },
 
     openUploadWindow: function(e) {
@@ -600,24 +631,22 @@ try {
     },
 
     doUpload: function(e) {
-
+        e.stop();
         var f = new FormData(this.uploadWindow.frm);
-
-          var oReq = new XMLHttpRequest();
-  oReq.open("POST", "chorum.php", true);
-  oReq.onload = this.cancelUpload.bind(this);
-  oReq.send(f);
-
-
-//        new Ajax.Request("chorum.php", {
-//            contentType: null,
-//            method: "POST",
-//            postBody: new FormData(this.uploadWindow.frm),
-//            onSuccess: this.cancelUpload.bind(this)
-//        });
+        var oReq = new XMLHttpRequest();
+        oReq.open("POST", "chorum.php", true);
+        oReq.onload = this.cancelUpload.bind(this);
+        oReq.send(f);
+        this.attBox.list.innerHTML="";
+        var i = document.createElement("img");
+        i.src="assets/spinner.gif";
+        i.addClassName("uploadSpinner");
+        this.attBox.list.appendChild(i);
+        return false;
     },
 
     cancelUpload: function(e) {
+        e.stop();
         new Jif("chorum.php", {
             method: "post",
             parameters: {
@@ -682,6 +711,7 @@ try {
             del.setAttribute("title", "Delete");
             del.fileid=v.id;
             op.appendChild(del);
+            del.observe("click", me.deleteAttach.bind(me));
 
             fn.innerHTML = v.filename;
 
@@ -690,6 +720,22 @@ try {
             attBox.list.ul.appendChild(li);
         }).bind(this);
 
+    },
+
+    deleteAttach: function(e) {
+        e.stop();
+        var el = e.srcElement;
+        var id = el.fileid;
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "deletePending",
+                file: id,
+                topic: this.topic
+            },
+            onSuccess: this.pending.bind(this)
+        });
+        return false;
     },
 
     insertPicture: function(e) {

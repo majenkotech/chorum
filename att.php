@@ -6,6 +6,7 @@ $id = $_GET['id'] - 0;
 $q = db_query("select * from attachments where id=:id", array("id" => $id));
 if ($r = db_next($q)) {
     header("Content-type: " . $r->mime);
+    header("Content-disposition: attachment; filename=\"" . $r->filename . "\"");
     print $r->data;
     db_update("attachments", $r->id, array("downloads" => $r->downloads + 1));
 } else {

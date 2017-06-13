@@ -30,7 +30,16 @@ if ($func == "upload") {
     exit(0);
 }
 
-if ($func == "pending") {
+if ($func == "deletePending") {
+    $file = db_select("attachments", $_POST['file']);
+    if ($file->owner != $user->id) {
+        header("HTTP/1.0 403 Forbidden");
+        exit(0);
+    }
+    db_delete("attachments", $_POST['file']);
+}
+
+if ($func == "pending" || $func == "deletePending") {
     $files = db_query("select id, filename, mime from attachments where message=-1 and owner=:owner order by id", array("owner" => $user->id));
     $out = array();
     while ($r = db_next($files)) {
