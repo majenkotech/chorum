@@ -162,15 +162,15 @@ function menu() {
 <div class="siteName"></div>
 <div class="siteStrap"></div>
 <ul class='menu'>
-<?php if (isAdmin($user->id)) { ?>
-<li><a href='manage.php'>Manage Forums</a></li>
-<?php } ?>
 <li><a href='index.php'>Forum List</a></li>
 <?php
     if ($_SESSION['uid'] > 0) {
 ?>
 <li><a href='newtopic.php'>New Topic</a></li>
 <li><a href='ucp.php'>Control Panel</a></li>
+<?php if (isAdmin($user->id)) { ?>
+<li><a href='manage.php'>Manage Forums</a></li>
+<?php } ?>
 <li><a href='logout.php'>Log Out</a></li>
 <?php
     } else {
