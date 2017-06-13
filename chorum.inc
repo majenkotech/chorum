@@ -270,6 +270,10 @@ function getTopicsForForum($forum) {
         if ($tr->maxts == "") {
             $tr->maxts = $tr->ts;
         }
+        $ac = db_select("actions", $tr->maxid);
+        $ms = db_select("messages", $ac->message);
+        $mu = db_select("users", $ms->user);
+        $tr->message_user = $mu;
         $topics[] = $tr;
     }
 
@@ -291,6 +295,10 @@ function getTopicsForForum($forum) {
         if ($tr->maxts == "") {
             $tr->maxts = $tr->ts;
         }
+        $ac = db_select("actions", $tr->maxid);
+        $ms = db_select("messages", $ac->message);
+        $mu = db_select("users", $ms->user);
+        $tr->message_user = $mu;
         $sticky[] = $tr;
     }
     

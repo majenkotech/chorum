@@ -701,3 +701,37 @@ div.previewBody {
     overflow: auto;
     color: #FFFFFF;
 }
+
+input[type=button] {
+    display: inline-block;
+    border:1px solid #F0B845;
+    color: #2B2B2B;
+    border-radius: 3px 3px 3px 3px;
+    -webkit-border-radius: 3px 3px 3px 3px;
+    -moz-border-radius: 3px 3px 3px 3px;
+    font-family: Verdana;
+    width: auto;
+    height: auto;
+    font-size: 16px;
+    padding: 1px 21px;
+    text-shadow: 0 1px 0 #FFFFFF;
+    background-image: linear-gradient(to top, #F0B845, #FFFFFF);
+    background-color: #F0B845;
+}
+
+input[type=submit] {
+    display: inline-block;
+    border:1px solid #90B942;
+    color: #2B2B2B;
+    border-radius: 3px 3px 3px 3px;
+    -webkit-border-radius: 3px 3px 3px 3px;
+    -moz-border-radius: 3px 3px 3px 3px;
+    font-family: Verdana;
+    width: auto;
+    height: auto;
+    font-size: 16px;
+    padding: 1px 21px;
+    text-shadow: 0 1px 0 #FFFFFF;
+    background-image: linear-gradient(to top, #90B942, #FFFFFF);
+    background-color: #90B942;
+}

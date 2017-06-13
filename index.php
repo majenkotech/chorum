@@ -49,7 +49,13 @@
                     <img src='assets/locked.png' title='This forum is locked' />
                 <?php } ?>
             </td>
-            <td nowrap align=center><?php print $topic->user->name; ?></td>
+            <?php
+                $u = $topic->message_user->name;
+                if ($u == "") {
+                    $u = $topic->user->name;
+                }
+            ?>
+            <td nowrap align=center><?php print $u; ?></td>
             <td nowrap align=center><?php print $topic->posts; ?></td>
             <td nowrap align=center><?php print date("H:i d M Y", $topic->maxts); ?></td>
         </tr>
