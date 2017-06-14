@@ -15,11 +15,28 @@
         }
     }
 
+    if (array_key_exists("save", $args)) {
+        db_update("forums", $args['forum'], array(
+            "name" => $args['name'],
+            "locked" => (($args['locked'] == "on") ? "Y" : "N"),
+            "hidden" => (($args['hidden'] == "on") ? "Y" : "N")
+        ));
+    }
+
     $forums = array();
     $q = db_query("SELECT * FROM forums ORDER BY name");
     while ($r = db_next($q)) {
         $forums[$r->id] = $r->name;
     }
+
+    if (array_key_exists("forum", $args)) {
+        $forum = db_select("forums", $args['forum']);
+        if (!$forum) {
+            header("HTTP/1.1 404 Not found");
+            exit(0);
+        }
+    }
+
 ?>
 
 <head>
@@ -74,7 +91,7 @@
     </td>
 </tr>
 <tr>
-    <td colspan=2 align=right><input type='submit' value='Save'/></td>
+    <td colspan=2 align=right><input type='submit' name="save" value='Save'/></td>
 </tr>
 </table>
 </forum>
