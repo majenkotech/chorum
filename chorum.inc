@@ -166,6 +166,7 @@ function menu() {
 <?php
     if ($_SESSION['uid'] > 0) {
 ?>
+<li><a href='unread.php'>Unread</a></li>
 <li><a href='newtopic.php'>New Topic</a></li>
 <li><a href='ucp.php'>Control Panel</a></li>
 <?php if (isAdmin($user->id)) { ?>
@@ -561,7 +562,33 @@ function getForum($id) {
 }
 
 function getTopic($id) {
-    return db_select("topics", $id);
+    $topic = db_select("topics", $id);
+    $topic->userid = $topic->user;
+    $topic->user = db_select("users", $topic->user);
+    if ($topic->sticky == 'Y') {
+        $topic->sticky = true;
+    } else {
+        $topic->sticky = false;
+    }
+
+    $mq = db_query("select count(messages.id) as posts, max(latest_actions.ts) as maxts, max(latest_actions.id) as maxid from messages, latest_actions where messages.topic = :topic and latest_actions.message = messages.id and (latest_actions.action = 'P' or latest_actions.action = 'E')", array("topic" => $topic->id));
+    $mr = db_next($mq);
+
+    $topic->posts = $mr->posts;
+    $topic->maxts = $mr->maxts;
+    $topic->maxid = $mr->maxid;
+    if ($topic->maxid == "") {
+        $topic->maxid = 0;
+    }
+    if ($topic->maxts == "") {
+        $topic->maxts = $topic->ts;
+    }
+    $ac = db_select("actions", $topic->maxid);
+    $ms = db_select("messages", $ac->message);
+    $mu = db_select("users", $ms->user);
+    $topic->message_user = $mu;
+
+    return $topic;
 }
 
 function getUser($id) {

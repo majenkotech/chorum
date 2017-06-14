@@ -90,7 +90,7 @@ if (($func == "init") || ($func == "rename") || ($func == "edittopic")) {
         header("HTTP/1.0 400 Bad Request");
         exit(0);
     }
-    $owner = db_select("users", $topic->user);
+    $owner = db_select("users", $topic->userid);
     $resp = array(
         "content" => "init",
         "notifications" => ($user->notifications == 'Y'),
