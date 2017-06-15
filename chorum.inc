@@ -453,9 +453,9 @@ function getMessageData($msgid) {
         $voted = 0;
     }
 
-    $strap = $message->id . " Posted " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+    $strap = "Posted " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
     if ($action->action == 'E') {
-        $strap = $message->id . " Edited " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
+        $strap = "Edited " . date("d M Y, H:i", $action->ts) . ", " . $rating . " votes";
     }
 
     $atts = db_query("SELECT id, filename, length(data) as len, mime from attachments where message=:mid", array("mid" => $message->id));
