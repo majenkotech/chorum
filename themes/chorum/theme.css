@@ -5,6 +5,42 @@
  * Olive:  90b942
  */
 
+:root {
+    --orange: #f0b845;
+    --green:  #5ab942;
+    --olive:  #90b942;
+
+    --default:          #eeeeee;
+    --default-text:     #2b2b2b;
+    --default-link:     #90b942;
+
+    --dark:             #2b2b2b;
+    --dark-text:        #eeeeee;
+    --dark-link:        #90b942;
+
+    --pale:             #90b942;
+    --pale-text:        #2b2b2b;
+    --pale-link:        #90b942;
+
+    --vibrant:          #5ab942;
+    --vibrant-text:     #2b2b2b;
+    --vibrant-link:     #2b2b2b;
+
+    --highlight:        #f0b845;
+
+    --darktext:         #2b2b2b;
+    --lighttext:        #eeeeee;
+    --shadow:           #666666;
+
+    --quote:            #cccc77;
+    --quote-text:       #2b2b2b;
+    --quote-border:     #cccc22;
+
+    --important:        #550000;
+    --important-text:   #eeeeee;
+    --important-link:   #f0b845;
+}
+
 
 /* THE SPEECH BUBBLE
 ------------------------------------------------------------------------------------------------------------------------------- */
@@ -15,22 +51,21 @@ body {
     width: 960px;
     margin-left: auto;
     margin-right: auto;
-    background-color: #eeeeee;
+    background-color: var(--default);
     background-image: url("bg.png");
     margin-top: 0;
     margin-bottom: 0;
-    color: #2b2b2b;
+    color: var(--default-text);
 }
 
 .triangle-right {
   position:relative;
   padding:15px;
   margin:1em 0 3em;
-  color:#fff;
   -webkit-border-radius:10px;
   -moz-border-radius:10px;
   border-radius:10px;
-  box-shadow: 2px 2px 4px #666666;
+  box-shadow: 2px 2px 4px var(--shadow);
 }
 
 /* Variant : for left positioned triangle
@@ -85,17 +120,17 @@ body {
 
 
 blockquote {
-    background: #cccc77;
+    background: var(--quote);
     padding: 10px;
     margin: 0px;
-    color: #2b2b2b;
+    color: var(--quote-text);
     border-style: none none none solid;
     border-width: 8px;
-    border-color: #666622;
+    border-color: var(--quote-border);
 }
 
 .message a {
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
     text-decoration: underline;
 }
@@ -186,7 +221,7 @@ blockquote {
 .messageStrap {
     border-width: 1px 0px 0px 0px;
     border-style: solid;
-    border-color: #cccccc;
+    border-color: var(--light-text);
     padding-top: 3px;
     font-size: 10px;
     font-style: italic;
@@ -213,14 +248,13 @@ blockquote {
     padding-top: 20px;
     border-style: solid none none none;
     border-width: 1px;
-    border-color: #2b2b2b;
+    border-color: var(--dark);
 }
 
 .messagePostEntry {
     border-style: solid;
     border-width: 1px;
-    border-color: #2b2b2b;
-//    display: inline-table;
+    border-color: var(--dark);
     width: 100%;
     height: 150px;
 }
@@ -234,13 +268,13 @@ blockquote {
 
 .messagePostHint a {
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
 }
 
 code {
-    background-color: #2b2b2b;
-    color: #00FF00;
+    background-color: var(--dark);
+    color: var(--vibrant);
     display: block;
     overflow: auto;
     padding: 10px;
@@ -303,14 +337,14 @@ h2 {
 
 .footer {
     text-align: center;
-    color: #444444;
+    color: var(--default-text);
     font-size: 12px;
     font-style: italic;
     margin-top: 20px;
     padding-top: 20px;
     border-style: solid none none none;
     border-width: 1px;
-    border-color: #2b2b2b;
+    border-color: var(--dark);
 }
 
 .questiontitle {
@@ -320,11 +354,11 @@ h2 {
 
 .questionbox {
     border-style: solid;
-    border-color: #2b2b2b;
+    border-color: var(--dark);
     border-width: 3px;
     border-radius: 20px;
     padding: 10px;
-    background-color: #ffffff;
+    background-color: var(--default);
 }
 
 .questionbox img {
@@ -345,7 +379,7 @@ h2 {
 .signup a{
     font-weight: bold;
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
 }
 
 ul.menu {
@@ -363,18 +397,18 @@ ul.menu li {
 
 ul.menu li a {
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
 }
 
 div.login {
     width: 400px;
     margin: 50px auto 0 auto;
-    border-color: #2b2b2b;
+    border-color: var(--dark);
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
-    background-color: #ffffff;
+    background-color: var(--default);
     padding: 20px;
     text-align: center;
 }
@@ -395,8 +429,8 @@ div.error {
     width: 300px;
     margin: 20px auto 0 auto;
     text-align: center;
-    background: #883333;
-    color: white;
+    background: var(--important);
+    color: var(--important-text);
     font-weight: bold;
     font-size: 18px;
     padding: 10px;
@@ -404,17 +438,17 @@ div.error {
 
 div.login a {
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
 } 
 
 div.newpost {
     width: 100%;
-    border-color: #2b2b2b;
+    border-color: var(--dark);
     border-width: 3px;
     border-style: solid;
     border-radius: 20px;
-    background-color: #ffffff;
+    background-color: var(--default);
     padding: 20px;
     text-align: center;
 } 
@@ -439,28 +473,27 @@ div.forum table {
 
 div.forum a {
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
 }  
 
 div.forum tr {
-    background: #90b942;
     padding: 0px;
 }
 
 div.forum td {
-    background: #eeeeee;
+    background: var(--default);
     padding: 4px;
-    border-color: #90b942;
+    border-color: var(--dark);
     border-width: 1px;
     border-style: solid;
 }
 
 div.forum th {
-    border-color: #444444;
+    border-color: var(--dark);
     border-width: 1px;
     border-style: solid;
-    background: #90b942;
+    background: var(--pale);
     text-align: left;
     padding: 4px;
 }
@@ -484,7 +517,7 @@ div.topicTools ul li {
 
 div.topicTools ul li a {
     text-decoration: underline;
-    color: #f0b845;
+    color: var(--highlight);
     font-weight: bold;
 }
 
@@ -498,17 +531,17 @@ img.emoji {
 
 tr.sticky {
     font-weight: bold;
-    background: #a1ca53;
+    background: var(--vibrant);
 }
 
 tr.sticky td {
-    background: #a1ca53;
-    color: #444444;
-    border-color: #444444;
+    background: var(--vibrant);
+    color: var(--vibrant-text);
+    border-color: var(--dark);
 }
 
 tr.sticky td a {
-    color: #444444;
+    color: var(--vibrant-link);
 }
 
 div.forum h1 {
@@ -528,9 +561,9 @@ div.forum h1 {
     z-index: 65535;
     text-align: center;
     bottom: 0px;
-    background-color: #550000;
-    color: #eeeeee;
-    box-shadow: 0px 0px 20px #000000;
+    background-color: var(--important);
+    color: var(--important-text);
+    box-shadow: 0px 0px 20px var(--shadow);
     background-image: url("cookie.png");
     background-repeat: no-repeat;
 }
@@ -541,7 +574,7 @@ div.forum h1 {
 }
 
 .cookiePopup a {
-    color: #f0b845;
+    color: var(--important-link);
     font-weight: bold;
 
 }
@@ -557,8 +590,8 @@ div.forum h1 {
 }
 
 .attachmentBox {
-    background-color: #ffffff;
-    border-color: #000000;
+    background-color: var(--default);
+    border-color: var(--dark);
     border-width: 1px;
     border-style: solid;
     width: 100%;
@@ -583,9 +616,9 @@ div.forum h1 {
     font-size: 10px;
     text-align: center;
     border-style: none none solid none;
-    border-color: #000000;
+    border-color: var(--dark);
     border-width: 1px;
-    background-color: #90b942;
+    background-color: var(--pale);
     font-weight: bold;
 }
 
@@ -599,7 +632,7 @@ div.forum h1 {
     height: 16px;
     border-style: solid none none none;
     border-width: 1px;
-    border-color #000000;
+    border-color var(--dark);
 }
 
 .messageAttachmentIcons img {
@@ -639,7 +672,7 @@ div.forum h1 {
 }
 
 .uploadWindow {
-    background-color: #90b942;
+    background-color: var(--pale);
     overflow: auto;
     width: 100%;
     height: 116px;
@@ -676,10 +709,10 @@ div.previewPanel {
     bottom: 100px;
     left: 100px;
     right: 100px;
-    background-color: #776655;
+    background-color: var(--pale);
     border-radius: 10px;
     overflow: auto;
-    box-shadow: 2px 2px 4px #666666;
+    box-shadow: 2px 2px 4px var(--shadow);
 }
 
 div.bodyLocker {
@@ -688,7 +721,7 @@ div.bodyLocker {
     bottom: 0px;
     left: 0px;
     right: 0px;
-    background-color: #000000;
+    background-color: var(--dark);
     opacity: 0.5;
 }
 
@@ -699,13 +732,13 @@ div.previewBody {
     left: 120px;
     right: 120px;
     overflow: auto;
-    color: #FFFFFF;
+    color: var(--pale-text);
 }
 
 input[type=button] {
     display: inline-block;
-    border:1px solid #F0B845;
-    color: #2B2B2B;
+    border:1px solid var(--highlight);
+    color: var(--dark);
     border-radius: 3px 3px 3px 3px;
     -webkit-border-radius: 3px 3px 3px 3px;
     -moz-border-radius: 3px 3px 3px 3px;
@@ -713,15 +746,15 @@ input[type=button] {
     height: auto;
     font-size: 14px;
     padding: 1px 21px;
-    text-shadow: 0 1px 0 #FFFFFF;
-    background-image: linear-gradient(to top, #F0B845, #FFFFFF);
-    background-color: #F0B845;
+    text-shadow: 0 1px 0 var(--default);
+    background-image: linear-gradient(to top, var(--highlight), var(--default));
+    background-color: var(--highlight);
 }
 
 input[type=submit] {
     display: inline-block;
-    border:1px solid #90B942;
-    color: #2B2B2B;
+    border:1px solid var(--pale);
+    color: var(--dark);
     border-radius: 3px 3px 3px 3px;
     -webkit-border-radius: 3px 3px 3px 3px;
     -moz-border-radius: 3px 3px 3px 3px;
@@ -729,7 +762,7 @@ input[type=submit] {
     height: auto;
     font-size: 14px;
     padding: 1px 21px;
-    text-shadow: 0 1px 0 #FFFFFF;
-    background-image: linear-gradient(to top, #90B942, #FFFFFF);
-    background-color: #90B942;
+    text-shadow: 0 1px 0 var(--default);
+    background-image: linear-gradient(to top, var(--pale), var(--default));
+    background-color: var(--pale);
 }
