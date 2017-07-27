@@ -106,7 +106,7 @@ function populateStaticMessages($id) {
     $topic = getTopic($id);
     if (!topic) return;
 
-    $owner = getUser($topic->user);
+    $owner = $topic->user;
     $pd = new Parsedown();
 ?>
     <h1 class='questiontitle'><?php print htmlspecialchars($topic->title); ?></h1>
