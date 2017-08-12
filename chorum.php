@@ -18,6 +18,13 @@ $func = $_POST['action'];
 $topic = false;
 if (array_key_exists("topic", $_POST)) $topic = getTopic($_POST['topic']);
 
+if ($func == "unread") {
+    $out = getUnreadTopics();
+    header("Content-type: application/json");
+    print json_encode($out);
+    exit(0);
+}
+
 if ($func == "upload") {
     db_query("insert into attachments set owner=:owner, filename=:filename, mime=:mime, uploaded=:uploaded, message=-1, data=:data", array(
         "owner" => $user->id,

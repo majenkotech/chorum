@@ -814,6 +814,7 @@ try {
         } else {
             this.updateTimer = setTimeout(this.update.bind(this), this.timerPeriod);
         }
+        setTimeout(this.checkInView.bind(this), 100);
     },
 
     update: function() {
@@ -1094,4 +1095,81 @@ function displayCookies(div) {
     }
 
     el.innerHTML = aString;
+}
+
+function triggerUnreadTopicUpdateTask() {
+    new Jif("chorum.php", {
+        method: "post",
+        parameters: {
+            action: "unread",
+        },
+        onSuccess: doUnreadTopicUpdateTask
+    });
+}
+
+function doUnreadTopicUpdateTask(data) {
+    var rows = $("unreadList").select('[class="unreadRowPlaceholder"]');
+    rows.each(function (v) {
+        v.parentNode.removeChild(v);
+    });
+    var count = 0;
+    data.responseJSON.each(function(v) { 
+
+        count++;
+
+        var tr = document.createElement("tr");
+        tr.addClassName("unreadRowPlaceholder");
+
+        var tdTitle = document.createElement("td");
+        var tdTitleLink = document.createElement("a");
+        tdTitleLink.innerHTML = v.title;
+        tdTitleLink.href="topic.php?topic=" + v.id;
+        tdTitle.appendChild(tdTitleLink);
+        tdTitle.addClassName("unreadTitle");
+
+        if (v.locked == "Y") {
+            tdTitleLock = document.createElement("img");
+            tdTitleLock.src = "assets/locked.png";
+            tdTitle.appendChild(tdTitleLocked);
+        }
+        tr.appendChild(tdTitle);
+
+        var tdUser = document.createElement("td");
+        tdUser.innerHTML = v.username;
+        tdUser.addClassName("unreadUser");
+        tr.appendChild(tdUser);
+        
+        var tdReplies = document.createElement("td");
+        tdReplies.innerHTML = v.posts;
+        tdReplies.addClassName("unreadReplies");
+        tr.appendChild(tdReplies);
+        
+        var tdUpdated = document.createElement("td");
+        tdUpdated.innerHTML = v.date;
+        tdUpdated.addClassName("unreadUpdated");
+        tr.appendChild(tdUpdated);
+        
+
+        $("unreadList").appendChild(tr);
+    });
+
+    var ts = document.title.split(" :: ");
+
+    var sitename = ts[0];
+    if (sitename.startsWith("(")) {
+        sitename = sitename.split(" ")[1];
+    }
+
+    if (count == 0) {
+        document.title = sitename + " :: Unread Topics";
+    } else {
+        document.title = "(" + count + ") " + sitename + " :: Unread Topics";
+    }
+    setTimeout(triggerUnreadTopicUpdateTask, 30000);
+
+    
+}
+
+function startUnreadTopicUpdateTask() {
+    setTimeout(triggerUnreadTopicUpdateTask, 1000);
 }

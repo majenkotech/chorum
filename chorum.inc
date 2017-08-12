@@ -594,3 +594,40 @@ function getTopic($id) {
 function getUser($id) {
     return db_select("users", $id);
 }
+
+function getUnreadTopics() {
+    
+    $unread = array();
+    global $user;
+    if (!$user) {
+        return array();
+    }
+
+    $q = db_query("select max(messages.id) as maxid, topics.id as topic from topics,messages,latest_actions where latest_actions.message=messages.id and topics.id=messages.topic and (latest_actions.action = 'P' or latest_actions.action='E') group by topic order by maxid desc");
+    while ($r = db_next($q)) {
+        $unread[$r->topic] = $r->maxid;
+    }
+
+    $views = array();
+    $q = db_query("select maxid, topic from user_views where user=:user", array("user" => $user->id));
+    while ($r = db_next($q)) {
+        $views[$r->topic] = $r->maxid;
+    }
+
+    $out = array();
+
+    foreach ($unread as $topicid=>$maxid) {
+        if ($views[$topicid] >= $maxid) {
+            continue;
+        }
+        $topic = getTopic($topicid);
+
+        $topic->username = $topic->message_user->name;
+        if ($topic->username == "") {
+            $topic->username = $topic->user->name;
+        }
+        $topic->date = date("H:i d M Y", $topic->maxts);
+        $out[] = $topic;
+    }
+    return $out;
+}

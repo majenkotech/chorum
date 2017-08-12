@@ -16,7 +16,7 @@
 <link rel='stylesheet' href='themes/<?php print $theme; ?>/theme.css'/>
 <title><?php print $siteName; ?> :: Unread Topics</title>
 </head>
-<body>
+<body onLoad="startUnreadTopicUpdateTask();">
 <?php menu(); ?>
 <?php
     $unread = array();
@@ -35,8 +35,9 @@
     <h1>Unread Posts</h1>
     </h1>
     <table>
+        <tbody id="unreadList">
         <tr>
-            <th>Topic</th><th>User</th><th>Replies</th><th>Updated</th>
+            <th width="100%">Topic</th><th>User</th><th>Replies</th><th>Updated</th>
         </tr>
 <?php
 
@@ -46,8 +47,8 @@
         }
         $topic = getTopic($topicid);
 ?>
-        <tr <?php if ($topic->sticky) { ?> class='sticky' <?php } ?>>
-            <td width="100%">
+        <tr class="unreadRowPlaceholder<?php if ($topic->sticky) { print " sticky"; } ?>">
+            <td class="unreadTitle">
                 <a href='topic.php?topic=<?php print $topic->id; ?>'>
                     <?php print $topic->title; ?>
                 </a>
@@ -61,9 +62,9 @@
                     $u = $topic->user->name;
                 }
             ?>
-            <td nowrap align=center><?php print $u; ?></td>
-            <td nowrap align=center><?php print $topic->posts; ?></td>
-            <td nowrap align=center><?php print date("H:i d M Y", $topic->maxts); ?></td>
+            <td class="unreadUser"><?php print $u; ?></td>
+            <td class="unreadReplies"><?php print $topic->posts; ?></td>
+            <td class="unreadUpdated"><?php print date("H:i d M Y", $topic->maxts); ?></td>
         </tr>
 
 <?php
@@ -71,7 +72,9 @@
         if ($c >= 10) break;
     }
 ?>
+    </tbody>
     </table>
+</div>
 <?php
     
     footer();

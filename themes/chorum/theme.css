@@ -799,3 +799,24 @@ input[type=submit] {
 .messagePostHint {
     font-size: 1em;
 }
+
+.unreadTitle {
+    width: 100%;
+}
+
+.unreadUser {
+    text-align: center;
+    white-space: nowrap;
+}
+    
+.unreadReplies {
+    text-align: center;
+    white-space: nowrap;
+}
+    
+.unreadUpdated {
+    text-align: center;
+    white-space: nowrap;
+}
+    
+
