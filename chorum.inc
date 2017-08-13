@@ -1,5 +1,7 @@
 <?php
 
+session_set_cookie_params(2592000);
+
 require __DIR__ . '/vendor/autoload.php';
 require_once 'config.php';
 
@@ -11,17 +13,17 @@ $session = new SessionInstance("chorum");
 $db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
 db_query("SET NAMES 'utf8' COLLATE 'utf8_general_ci'");
 
-if (array_key_exists("ChorumAuthKey", $_COOKIE)) {
-    if (array_key_exists("ChorumAuthUser", $_COOKIE)) {
-        $q = db_query("SELECT * FROM users WHERE persist=:key AND name=:username AND persist!=''", array(
-            "key" => $_COOKIE['ChorumAuthKey'],
-            "username" => $_COOKIE['ChorumAuthUser']
-        ));
-        if ($r = db_next($q)) {
-            $session->set("uid", $r->id);
-        }
-    }
-}
+//if (array_key_exists("ChorumAuthKey", $_COOKIE)) {
+//    if (array_key_exists("ChorumAuthUser", $_COOKIE)) {
+//        $q = db_query("SELECT * FROM users WHERE persist=:key AND name=:username AND persist!=''", array(
+//            "key" => $_COOKIE['ChorumAuthKey'],
+//            "username" => $_COOKIE['ChorumAuthUser']
+//        ));
+//        if ($r = db_next($q)) {
+//            $session->set("uid", $r->id);
+//        }
+//    }
+//}
 
 $user = false;
 if ($session->get("uid")) $user = getUser($session->get("uid"));
