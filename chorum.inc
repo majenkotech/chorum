@@ -660,6 +660,14 @@ function getUnreadTopicsSince($ts) {
 
     $out = array();
 
+    $q = db_query("select topics.id from topics where ts > :ts order by ts desc", array("ts" => $ts));
+
+    while ($r = db_next($q)) {
+        if (!array_key_exists($r->id, $views)) {
+            $unread[$r->id] = 0;
+        }
+    }
+
     foreach ($unread as $topicid=>$maxid) {
         if (array_key_exists($topicid, $views)) {
             if ($views[$topicid] >= $maxid) {
