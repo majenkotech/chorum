@@ -9,7 +9,7 @@
                 header("Location: waitauth.php");
                 exit(0);
             }
-            $_SESSION['uid'] = $r->id;
+            $session->set('uid', $r->id);
             $persist = '';
             if (array_key_exists("stay", $_POST)) {
                 for ($i = 0; $i < 40; $i++) {

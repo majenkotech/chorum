@@ -1,10 +1,11 @@
 <?php
 
-session_start();
-
+require __DIR__ . '/vendor/autoload.php';
 require_once 'config.php';
-require_once 'parsedown/Parsedown.php';
-require_once 'PHPMailer/PHPMailerAutoload.php';
+
+use duncan3dc\Sessions\SessionInstance;
+
+$session = new SessionInstance("chorum");
 
 // Configure this line for your DB.
 $db = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUsername, $dbPassword);
@@ -17,13 +18,13 @@ if (array_key_exists("ChorumAuthKey", $_COOKIE)) {
             "username" => $_COOKIE['ChorumAuthUser']
         ));
         if ($r = db_next($q)) {
-            $_SESSION['uid'] = $r->id;
+            $session->set("uid", $r->id);
         }
     }
 }
 
 $user = false;
-if (array_key_exists("uid", $_SESSION)) $user = getUser($_SESSION['uid']);
+if ($session->get("uid")) $user = getUser($session->get("uid"));
 
 function db_query($query,$params = array())
 {
@@ -156,6 +157,7 @@ function populateStaticMessages($id) {
 
 function menu() {
     global $user;
+    global $session;
 ?>
 <div class="header">
 <div class="logo"></div>
@@ -164,7 +166,7 @@ function menu() {
 <ul class='menu'>
 <li><a href='index.php'>Forum List</a></li>
 <?php
-    if ($_SESSION['uid'] > 0) {
+    if ($session->get("uid") > 0) {
 ?>
 <li><a href='unread.php'>Unread</a></li>
 <li><a href='newtopic.php'>New Topic</a></li>
@@ -318,10 +320,11 @@ function topsort($a, $b) {
 
 
 function getAvailableForums() {
+    global $session;
     $isAdmin = false;
     $isModerator = false;
-    if ($_SESSION['uid'] > 0) {
-        $user = db_select("users", $_SESSION['uid']);
+    if ($session->get("uid") > 0) {
+        $user = db_select("users", $session->get("uid"));
         if ($user->admin == 'Y') $isAdmin = true;
         if ($user->moderator == 'Y') $isModerator = true;
     }
@@ -344,8 +347,9 @@ function getAvailableForums() {
 }
 
 function canPostInForum($forum) {
-    if ($_SESSION['uid'] > 0) {
-        $user = db_select("users", $_SESSION['uid']);
+    global $session;
+    if ($session->get("uid") > 0) {
+        $user = db_select("users", $session->get("uid"));
         if ($user->admin == 'Y') return true;
     }
 
@@ -358,11 +362,11 @@ function canPostInForum($forum) {
 }
 
 function topicTools($tid) {
-    if ($_SESSION['uid'] <= 0) {
+    if ($session->get("uid") <= 0) {
         return;
     }
     $topic = db_select("topics", $tid);
-    $user = db_select("users", $_SESSION['uid']);
+    $user = db_select("users", $session->get("uid"));
 ?>
 <div class='topicTools'>
 <ul>
@@ -414,8 +418,9 @@ function isAdmin($uid) {
 }
 
 function audit($msg) {
+    global $session;
     db_insert("audit", array(
-        "user" => $_SESSION['uid'],
+        "user" => $session->get("uid"),
         "log" => $msg,
         "ts" => time()
     ));
@@ -423,6 +428,7 @@ function audit($msg) {
 
 function getMessageData($msgid) {
     global $user;
+    global $session;
 
     $message = db_select("messages", $msgid);
 
@@ -446,7 +452,7 @@ function getMessageData($msgid) {
         $userrating = 0;
     }
 
-    $q = db_query("SELECT value FROM likes WHERE message=:msg AND user=:usr", array("msg" => $message->id, "usr" => $_SESSION['uid']));
+    $q = db_query("SELECT value FROM likes WHERE message=:msg AND user=:usr", array("msg" => $message->id, "usr" => $session->get("uid")));
     if ($r = db_next($q)) {
         $voted = $r->value - 0;
     } else {
@@ -621,6 +627,47 @@ function getUnreadTopics() {
             continue;
         }
         $topic = getTopic($topicid);
+
+        $topic->username = $topic->message_user->name;
+        if ($topic->username == "") {
+            $topic->username = $topic->user->name;
+        }
+        $topic->date = date("H:i d M Y", $topic->maxts);
+        $out[] = $topic;
+    }
+    return $out;
+}
+
+function getUnreadTopicsSince($ts) {
+    
+    $unread = array();
+    global $user;
+    if (!$user) {
+        return array();
+    }
+
+    $q = db_query("select max(messages.id) as maxid, topics.id as topic from topics,messages,latest_actions where latest_actions.message=messages.id and topics.id=messages.topic and (latest_actions.action = 'P' or latest_actions.action='E') group by topic order by maxid desc");
+    while ($r = db_next($q)) {
+        $unread[$r->topic] = $r->maxid;
+    }
+
+    $views = array();
+    $q = db_query("select maxid, topic from user_views where user=:user", array("user" => $user->id));
+    while ($r = db_next($q)) {
+        $views[$r->topic] = $r->maxid;
+    }
+
+    $out = array();
+
+    foreach ($unread as $topicid=>$maxid) {
+        if ($views[$topicid] >= $maxid) {
+            continue;
+        }
+        $topic = getTopic($topicid);
+
+        if ($topic->maxts <= $ts) {
+            continue;
+        }
 
         $topic->username = $topic->message_user->name;
         if ($topic->username == "") {

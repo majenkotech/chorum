@@ -1113,7 +1113,7 @@ function doUnreadTopicUpdateTask(data) {
         v.parentNode.removeChild(v);
     });
     var count = 0;
-    data.responseJSON.each(function(v) { 
+    data.responseJSON.topics.each(function(v) { 
 
         count++;
 
@@ -1170,6 +1170,147 @@ function doUnreadTopicUpdateTask(data) {
     
 }
 
+
+var Topic = Class.create({
+    initialize: function(id, data) {
+        this.data = data;
+        this.id = id;
+    },
+    // Return a Table Row (TR) node with four columns within it:
+    // | Topic         | User | Replies | Updated |
+    teaser: function() {
+        var tr = document.createElement("tr");
+
+        var tdTitle = document.createElement("td");
+        var tdTitleLink = document.createElement("a");
+        tdTitleLink.innerHTML = this.data.title;
+        tdTitleLink.href="topic.php?topic=" + this.id;
+        tdTitle.appendChild(tdTitleLink);
+        tdTitle.addClassName("teaserTitle");
+
+        if (this.data.locked == "Y") {
+            tdTitleLock = document.createElement("img");
+            tdTitleLock.src = "assets/locked.png";
+            tdTitle.appendChild(tdTitleLocked);
+        }
+        tr.appendChild(tdTitle);
+
+        var tdUser = document.createElement("td");
+        tdUser.innerHTML = this.data.username;
+        tdUser.addClassName("teaserUser");
+        tr.appendChild(tdUser);
+
+        var tdReplies = document.createElement("td");
+        tdReplies.innerHTML = this.data.posts;
+        tdReplies.addClassName("teaserReplies");
+        tr.appendChild(tdReplies);
+
+        var tdUpdated = document.createElement("td");
+        tdUpdated.innerHTML = this.data.date;
+        tdUpdated.addClassName("teaserUpdated");
+        tr.appendChild(tdUpdated);
+
+        return tr;
+    }
+});
+
+var UnreadList = Class.create({
+    initialize: function(div) {
+        this.pageTitle = document.title;
+        this.latestUpdate = 0;
+        this.div = div;
+        this.messages = new Array();
+        setTimeout(this.startUpdate.bind(this), 1000);
+        this.render();
+    },
+    startUpdate: function() {
+        new Jif("chorum.php", {
+            method: "post",
+            parameters: {
+                action: "unread",
+                latestUpdate: this.latestUpdate
+            },
+            onSuccess: this.parseUpdate.bind(this),
+            onFailure: this.noUpdate.bind(this),
+            onComplete: this.doneUpdate.bind(this)
+        });
+    },
+    noUpdate: function(r) {
+    },
+    doneUpdate: function(r) {
+    },
+    parseUpdate: function(r) {
+try {
+        if (r.status == 204) { // Nothing new
+            setTimeout(this.startUpdate.bind(this), 1000);
+            return;
+        }
+        var ob = r.responseJSON;
+        if (ob == null) {
+            setTimeout(this.startUpdate.bind(this), 1000);
+            return;
+        }
+        for (var i = 0; i < ob.topics.length; i++) {
+            for (var j = 0; j < this.messages.length; j++) {
+                if (this.messages[j].id == ob.topics[i].id) {
+                    delete this.messages[j];
+                }
+            }
+        }
+        this.messages = this.messages.compact();
+
+        for (var i = 0; i < ob.topics.length; i++) {
+            this.messages.unshift(new Topic(ob.topics[i].id, ob.topics[i]));
+            if (ob.topics[i].maxts > this.latestUpdate) {
+                this.latestUpdate = ob.topics[i].maxts;
+            }
+        }
+                    
+        this.render();
+        if (this.messages.length > 0) {
+            document.title = "(" + this.messages.length + ") " + this.pageTitle;
+        } else {
+            document.title = this.pageTitle;
+        }
+} catch (E) { alert(E); }
+        setTimeout(this.startUpdate.bind(this), 1000);
+    },
+    header: function() {
+        var header = document.createElement("tr");
+        var topic = document.createElement("th");
+        var user = document.createElement("th");
+        var replies = document.createElement("th");
+        var updated = document.createElement("th");
+        topic.innerHTML = "Topic";
+        user.innerHTML = "User";
+        replies.innerHTML = "Replies";
+        updated.innerHTML = "Updated";
+        header.appendChild(topic);
+        header.appendChild(user);
+        header.appendChild(replies);
+        header.appendChild(updated);
+        topic.addClassName("width100");
+        return header;
+    },
+    render: function() {
+try {
+        var table = document.createElement("table");
+        table.appendChild(this.header());
+
+        this.messages.each(function(msg) {
+            table.appendChild(msg.teaser());
+        });
+
+        while(this.div.children.length > 0) {
+            this.div.removeChild(this.div.children[0]);
+        }
+
+        this.div.appendChild(table);
+} catch (E) { alert(E); }
+    },
+});
+
 function startUnreadTopicUpdateTask() {
-    setTimeout(triggerUnreadTopicUpdateTask, 1000);
+    var unread = new UnreadList($("unreadlist"));
+//    setTimeout(triggerUnreadTopicUpdateTask, 1000);
 }

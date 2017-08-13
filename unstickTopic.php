@@ -1,7 +1,7 @@
 <?php
 require_once("chorum.inc");
 
-if (!isAdmin($_SESSION['uid'])) {
+if (!isAdmin($session->get("uid))) {
     header("HTTP/1.1 403 Forbidden");
     exit(0);
 }

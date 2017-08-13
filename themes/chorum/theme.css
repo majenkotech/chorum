@@ -800,23 +800,25 @@ input[type=submit] {
     font-size: 1em;
 }
 
-.unreadTitle {
+.teaserTitle {
     width: 100%;
 }
 
-.unreadUser {
+.teaserUser {
     text-align: center;
     white-space: nowrap;
 }
     
-.unreadReplies {
+.teaserReplies {
     text-align: center;
     white-space: nowrap;
 }
     
-.unreadUpdated {
+.teaserUpdated {
     text-align: center;
     white-space: nowrap;
 }
     
-
+.width100 {
+    width: 100%;
+}

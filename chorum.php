@@ -2,7 +2,7 @@
 
 require_once("chorum.inc");
 
-$user = db_select("users", $_SESSION['uid']);
+$user = db_select("users", $session->get('uid'));
 if (!$user) {
     $user = new stdClass;
     $user->id = -1;
@@ -19,7 +19,17 @@ $topic = false;
 if (array_key_exists("topic", $_POST)) $topic = getTopic($_POST['topic']);
 
 if ($func == "unread") {
-    $out = getUnreadTopics();
+    session_write_close();
+    $out['topics'] = getUnreadTopicsSince($_POST['latestUpdate']);
+    $start = time();
+    while (count($out['topics']) == 0) {
+        sleep(1);
+        $out['topics'] = getUnreadTopicsSince($_POST['latestUpdate']);
+        if (time() - $start >= 60) {
+            header("HTTP/1.1 204 No Content");
+            exit(0);
+        }
+    }
     header("Content-type: application/json");
     print json_encode($out);
     exit(0);

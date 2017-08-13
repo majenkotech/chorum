@@ -1,11 +1,11 @@
 <?php
     require_once("chorum.inc");
-    if ($_SESSION['uid'] <= 0) {
+    if ($session->get("uid") <= 0) {
         header("Location: signin.php");
         exit(0);
     }
 
-    $user = db_select("users", $_SESSION['uid']);
+    $user = db_select("users", $session->get("uid"));
     function updateUser() {
         global $user;
         if (array_key_exists("submit", $_POST)) {

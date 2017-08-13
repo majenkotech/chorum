@@ -1,0 +1,7 @@
+{
+    "require": {
+        "duncan3dc/sessions": "^1.2",
+        "phpmailer/phpmailer": "^5.2",
+        "erusev/parsedown": "^1.6"
+    }
+}

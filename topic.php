@@ -1,7 +1,7 @@
 <?php
     include "chorum.inc";
 
-    $uid = $_SESSION['uid'];
+    $uid = $session->get("uid");
     $user = db_select("users", $uid);
     $topic = db_select("topics", $_GET['topic']);
 ?>
