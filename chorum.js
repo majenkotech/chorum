@@ -1220,7 +1220,7 @@ var UnreadList = Class.create({
         this.latestUpdate = 0;
         this.div = div;
         this.messages = new Array();
-        setTimeout(this.startUpdate.bind(this), 1000);
+        setTimeout(this.startUpdate.bind(this), 100);
         this.render();
     },
     startUpdate: function() {
@@ -1242,12 +1242,12 @@ var UnreadList = Class.create({
     parseUpdate: function(r) {
 try {
         if (r.status == 204) { // Nothing new
-            setTimeout(this.startUpdate.bind(this), 1000);
+            setTimeout(this.startUpdate.bind(this), 100);
             return;
         }
         var ob = r.responseJSON;
         if (ob == null) {
-            setTimeout(this.startUpdate.bind(this), 1000);
+            setTimeout(this.startUpdate.bind(this), 100);
             return;
         }
         for (var i = 0; i < ob.topics.length; i++) {
@@ -1312,5 +1312,4 @@ try {
 
 function startUnreadTopicUpdateTask() {
     var unread = new UnreadList($("unreadlist"));
-//    setTimeout(triggerUnreadTopicUpdateTask, 1000);
 }

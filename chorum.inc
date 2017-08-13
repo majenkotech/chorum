@@ -362,6 +362,7 @@ function canPostInForum($forum) {
 }
 
 function topicTools($tid) {
+    global $session;
     if ($session->get("uid") <= 0) {
         return;
     }
@@ -660,8 +661,10 @@ function getUnreadTopicsSince($ts) {
     $out = array();
 
     foreach ($unread as $topicid=>$maxid) {
-        if ($views[$topicid] >= $maxid) {
-            continue;
+        if (array_key_exists($topicid, $views)) {
+            if ($views[$topicid] >= $maxid) {
+                continue;
+            }
         }
         $topic = getTopic($topicid);
 
