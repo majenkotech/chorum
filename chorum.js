@@ -1130,7 +1130,7 @@ function doUnreadTopicUpdateTask(data) {
         if (v.locked == "Y") {
             tdTitleLock = document.createElement("img");
             tdTitleLock.src = "assets/locked.png";
-            tdTitle.appendChild(tdTitleLocked);
+            tdTitle.appendChild(tdTitleLock);
         }
         tr.appendChild(tdTitle);
 
@@ -1191,7 +1191,7 @@ var Topic = Class.create({
         if (this.data.locked == "Y") {
             tdTitleLock = document.createElement("img");
             tdTitleLock.src = "assets/locked.png";
-            tdTitle.appendChild(tdTitleLocked);
+            tdTitle.appendChild(tdTitleLock);
         }
         tr.appendChild(tdTitle);
 
