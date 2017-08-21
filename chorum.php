@@ -21,6 +21,7 @@ if (array_key_exists("topic", $_POST)) $topic = getTopic($_POST['topic']);
 if ($func == "unread") {
     session_write_close();
     $out['topics'] = getUnreadTopicsSince($_POST['latestUpdate']);
+    $out['notifications'] = ($user->notifications == 'Y');
     $start = time();
     while (count($out['topics']) == 0) {
         sleep(1);

@@ -1264,7 +1264,11 @@ try {
             if (ob.topics[i].maxts > this.latestUpdate) {
                 this.latestUpdate = ob.topics[i].maxts;
             }
+            if (ob.topics.length > 0) {
+                var notification = new Notification("New unread message on \"" + ob.topics[i].title + "\"");
+            }
         }
+
                     
         this.render();
         if (this.messages.length > 0) {
